@@ -100,12 +100,12 @@ testSetCSV = ''
 
 csvList = []
 csvList.append(Dictionary.path_Breast_Cancer_Wisconsin)  # Example
-percentagesSets = [0.6,0.2,0.2]  # Example
+percentagesSets = [0.5,0.3,0.2]  # Example
 # --------------------------------------------------------------------------
 '''
 Reader Features
 '''
-labelsSet = [Dictionary.label_column_name_Breast_Cancer_Wisconsin]
+labelsSet = Dictionary.label_column_name_Breast_Cancer_Wisconsin
 tfReaderFeatures = tfr.ReaderFeatures(set_data_files = csvList,labels_set = labelsSet,
                                       is_unique_csv = isAnUniqueCSV,known_data_type = knownDataType,
                                       percentages_sets = percentagesSets)
