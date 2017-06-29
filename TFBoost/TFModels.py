@@ -76,6 +76,7 @@ class TFModels():
         # TODO(@gabvaztor) Load configuration by problem from json file in Settings folder
         # TODO(@gabvaztor) Ask if want save graphs images (attribute)
         # TODO(@gabvaztor) Ask if want print in console when save information (attribute)
+        # TODO(@gabvaztor) Save in information file the train number and percent epoch X (attribute)
         self._input = input
         self._test = test
         self._input_labels = input_labels
@@ -85,14 +86,14 @@ class TFModels():
         self._input_batch = None
         self._label_batch = None
         # CONFIGURATION VARIABLES
-        self._restore_model = False  # Labels and logits info.
+        self._restore_model = True  # Labels and logits info.
         self._save_model_information = True  # If must to save model or not
         self._ask_to_save_model_information = False  # If True and 'save_model' is true, ask to save model each time 'should_save'
         self._show_info = False  # Labels and logits info.
         self._show_images = False  # If True show images when show_info is True
         self._save_model_configuration = True  # If True, then all attributes will be saved in a settings_object path
-        # TRAIN MODEL VARIABLES
         self._shuffle_data = True
+        # TRAIN MODEL VARIABLES
         self._input_rows_numbers = 60
         self._input_columns_numbers = 60
         self._kernel_size = [5, 5]  # Kernel patch size
@@ -716,13 +717,23 @@ class TFModels():
         pt('input_size', self.input_size)
         pt('batch_size', self.batch_size)
 
-    def update_batch(self):
-        self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
-                                       inputs_labels=self.input_labels,
-                                       shuffle_data=self.shuffle_data,
-                                       batch_size=self.batch_size,
-                                       is_test=False,
-                                       options=self.options)
+    def update_batch(self, is_test=False):
+        if not is_test:
+            self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
+                                                                                inputs_labels=self.input_labels,
+                                                                                shuffle_data=self.shuffle_data,
+                                                                                batch_size=self.batch_size,
+                                                                                is_test=False,
+                                                                                options=self.options)
+        else:
+            x_test_feed, y_test_feed = self.data_buffer_generic_class(inputs=self.test,
+                                                                  inputs_labels=self.test_labels,
+                                                                  shuffle_data=self.shuffle_data,
+                                                                  batch_size=None,
+                                                                  is_test=True,
+                                                                  options=self.options)
+            return x_test_feed, y_test_feed
+
 
     def train_model(self, *args, **kwargs):
 
@@ -736,12 +747,8 @@ class TFModels():
         sess = kwargs['kwargs']['sess']
         y_prediction = kwargs['kwargs']['y_prediction']
 
-        x_test_feed, y_test_feed = self.data_buffer_generic_class(inputs=self.test,
-                                                                  inputs_labels=self.test_labels,
-                                                                  shuffle_data=self.shuffle_data,
-                                                                  batch_size=None,
-                                                                  is_test=True,
-                                                                  options=self.options)
+        x_test_feed, y_test_feed = self.update_batch(is_test=True)
+
         # TRAIN VARIABLES
         start_time = time.time()  # Start time
 
