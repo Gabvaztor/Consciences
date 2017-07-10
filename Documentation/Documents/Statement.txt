@@ -1,0 +1,18 @@
+"""
+Tareas para la versión estable del Framework 'TFBoost'
+"""
+
+Tasks:
+
+Un usuario que utilice TFBoost tiene la posibilidad de:
+
+- Leer de un archivo CSV cualquier cantidad de datos eligiendo cual/cuales son el/los objetivo/s a predecir.
+A partir del archivo podrá elegir qué porcentajes estarán repartidos para crear el conjunto de entrenamiento,
+de validación y de test y devolver tres conjuntos de datos a partir de él.
+
+- Leer de dos o tres archivos CSV pudiendo elegir cuál de ellos está dirigido para el conjunto de test y cual de ellos
+es del que se obtendrá el conjunto de entrenamiento y el de validación (este último opcional) retornando entre dos y
+tres conjuntos de datos. Si son dos archivos podrá obtenerse entre 2 y 3 conjuntos de datos y si son tres archivos se
+devolverán tres conjuntos de datos (ya que se supone que uno de ellos es el de validación). En cualquiera de los casos
+se podrá elegir cuál o cuáles columnas son el/los objetivo/s
+
