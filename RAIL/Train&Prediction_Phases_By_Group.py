@@ -70,6 +70,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Para calcular el tiempo
 import time as time
+#Para trabajar con json
+import json
 
 # El argumento -c debe ser el último elemento ya que se recoge un path, no un fullpath.
 ap = argparse.ArgumentParser()
@@ -104,6 +106,8 @@ start_event_learning_capture = "{ctrl}k{ctrl}k"
 end_event_learning_capture = "{ctrl}k{ctrl}k"
 # Path donde se guarda el modelo de la red neuronal
 path_save_restore_model = "../RAIL/Model_Saved/model.ckpt"
+# Path donde se guarda el json de la predicción
+path_save_json = "../RAIL/Model_Saved/prediction"
 # SE RECOGEN POR INPUT
 # Path de Aquiles
 if aquiles_file == None:
@@ -140,6 +144,29 @@ def numpy_fillna(data):
     out = np.zeros(mask.shape, dtype=data.dtype)
     out[mask] = np.concatenate(data)
     return out
+
+def write_json_to_pathfile(json, filepath):
+    """
+    Write a string to a path file
+    :param string: string to write
+    :param path: path where write
+    """
+    try:
+        create_directory_from_fullpath(filepath)
+        with open(filepath, 'w+') as file:
+            file.write(str(json))
+    except:
+        pt("No se ha podido guardar el json")
+
+def create_directory_from_fullpath(fullpath):
+    """
+    Create directory from a fullpath if it not exists.
+    """
+    # TODO (@gabvaztor) Check errors
+    directory = os.path.dirname(fullpath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    return directory
 
 def pt(title=None, text=None):
     """
@@ -621,7 +648,32 @@ def train_set_to_test():
     pt("test_set_input",test_set_input)
     return input_batch, label_batch, test_set_input
 
-def create_restore_train_network(path_to_save_model, restore_flag=False, test_input=None):
+
+class Predicction():
+    """
+    Clase que representa al objeto "Predicción"
+    """
+    click_type = 0.
+    coordinate_x = -1.
+    coordinate_y = -1.
+
+    def __init__(self, click_type, coordinate_x, coordinate_y):
+        self.click_type = str(click_type)
+        self.coordinate_x = str(coordinate_x)
+        self.coordinate_y = str(coordinate_y)
+
+    def save_json(self, filepath):
+        dict_copy = self.__dict__.copy()
+        json_string = json.dumps(self, default=lambda o: dict_copy, sort_keys=True, indent=4)
+        json_extension = ".json"
+        pt("json_string", json_string)
+        try:
+            write_json_to_pathfile(json=json_string, filepath=filepath+json_extension)
+            pt("Predicción guardada correctamente en formato \"json\"")
+        except:
+            pt("No se ha podido guardar el json")
+
+def train_prediction_network(path_to_save_model, restore_flag=False, test_input=None):
     if restore_flag:
         tf.reset_default_graph()
     # Parametros de la red
@@ -647,7 +699,6 @@ def create_restore_train_network(path_to_save_model, restore_flag=False, test_in
         # Salida con activación lineal
         salida = tf.matmul(capa_2, pesos['out']) + sesgo['out']
         return salida
-
 
     # Definimos los pesos y sesgo de cada capa.
     pesos = {
@@ -731,16 +782,19 @@ def create_restore_train_network(path_to_save_model, restore_flag=False, test_in
         # Si existe conjunto de testeo, predecir valir
         if test_input is not None:
             prediction = pred.eval(feed_dict={x: test_input})
-            pt("Predicción", prediction)
+            pt("Predicción", prediction[0])
+            type_click = prediction[0][0]
+            coordinate_x = prediction[0][1]
+            coordinate_y = prediction[0][2]
+            prediction_class = Predicction(click_type=type_click, coordinate_x=coordinate_x, coordinate_y=coordinate_y)
+            prediction_class.save_json(filepath=path_save_json)
 
 def get_path_from_robot_id_and_image_id(robot_id, image_id):
     """
-
     A partir del "robot_id" y de la "image_id" obtiene el path completo de la imagen.
     """
     # TODO
     return image_id
-
 
 def get_image_sign_processed(path_image):
     """
@@ -753,6 +807,14 @@ def get_image_sign_processed(path_image):
     # Procesamos la firma para que se obtenga de la misma forma que en el log enriquecido
     return sign_image_processed
 
+def hamdist(str1, str2):
+    """Count the # of differences between equal length strings str1 and str2"""
+    diffs = 0
+    for ch1, ch2 in zip(str1, str2):
+        if ch1 != ch2:
+            diffs += 1
+    return diffs
+
 def get_group_comparing_hamming_distance(image_sign, enriched_file_path):
     """
 
@@ -761,13 +823,7 @@ def get_group_comparing_hamming_distance(image_sign, enriched_file_path):
     """
     actual_group = None
     actual_hamming_distance = 900000000000
-    def hamdist(str1, str2):
-        """Count the # of differences between equal length strings str1 and str2"""
-        diffs = 0
-        for ch1, ch2 in zip(str1, str2):
-            if ch1 != ch2:
-                diffs += 1
-        return diffs
+
     try:
         enriched_log = openpyxl.load_workbook(filename=enriched_file_path)
         sheet = enriched_log.get_sheet_by_name("Agrupacion")
@@ -787,7 +843,6 @@ def get_group_from_image_id_and_hamming_distance(image_id, enriched_file_path, r
     Obtiene el grupo de la imagen a partir de la "image_id", el "robot_id" y el log enriquecido
 
     """
-    group = None
     # Path de la imagen para obtener la firma
     # TODO Para futura versión
     path_image = get_path_from_robot_id_and_image_id(robot_id, image_id)
@@ -857,7 +912,8 @@ def generate_test_input(log_aquiles_path, enriched_file_path, robot_id):
     return np.asarray(last_action).reshape(1,4)
 
 if __name__ == '__main__':
-    restore_model = load_previous_model  # Para saltarse el entrenamiento y cargar el modelo (se debe tener el modelo guardado)
+    restore_model = load_previous_model  # Para saltarse el entrenamiento y cargar el modelo
+    # (se debe tener el modelo guardado)
     pt("")
     pt("Comienzo del módulo 4")
 
@@ -870,9 +926,9 @@ if __name__ == '__main__':
     # Get batch algorithm
     if not restore_model:
         main_train_phase(log_aquiles_path=aquiles_file, enriched_file=enriched_file, start_all_flag=True)
-        save_path = create_restore_train_network(path_save_restore_model, restore_flag=False)
+        save_path = train_prediction_network(path_save_restore_model, restore_flag=False)
     else:
         test_set_input = generate_test_input(log_aquiles_path=aquiles_file, enriched_file_path=enriched_file,robot_id=2)
         pt("test_set_input", test_set_input)
-        create_restore_train_network(path_save_restore_model, restore_flag=True, test_input=test_set_input)
+        train_prediction_network(path_save_restore_model, restore_flag=True, test_input=test_set_input)
 
