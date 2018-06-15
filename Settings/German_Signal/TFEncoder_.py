@@ -53,8 +53,6 @@ class Dictionary(object):
     string_labels_type_option_hierarchy = 'hierarchy'
     # Format png
     string_extension_png = '.png'
-    # Format png
-    string_extension_jpeg = '.jpeg'
     # Format ckpt
     string_ckpt_extension = '.ckpt'
     # Format meta
@@ -106,7 +104,6 @@ class Dictionary(object):
 
     string_settings_web_traffic = "../Settings/Web_Traffic_Time/SETTINGS.json"
 
-    string_settings_retinopathy_k = "../Settings/Retinopathy_k/SETTINGS.json"
     """
     STRING FILENAMES
     """
@@ -132,8 +129,7 @@ class Dictionary(object):
     string_option_web_traffic_problem = 'web_traffic_problem'
     # Option Breast Cancer Wisconsin problem
     string_breast_cancer_wisconsin_problem = 'web_traffic_problem'
-    # Option Retinopathy_K problem
-    string_retinopathy_k_problem = "retinopathy_k_problem"
+
 
 class Errors(object):
     """

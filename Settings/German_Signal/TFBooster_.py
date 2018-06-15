@@ -77,16 +77,16 @@ import numpy as np
 import scipy.io as sio
 
 ''' Matlab URL: http://matplotlib.org/users/installing.html
-python -m pip install matplotlib'''
+python -m pip3 install matplotlib'''
 import matplotlib.pyplot as plt
 
 ''' TFLearn library. License MIT.
 Git Clone : https://github.com/tflearn/tflearn.git
-    To install: pip install tflearn'''
+    To install: pip3 install tflearn'''
 import tflearn
 '''
  Sklearn(scikit-learn): Simple and efficient tools for data mining and data analysis
- To install: pip install -U scikit-learn
+ To install: pip3 install -U scikit-learn
 '''
 from sklearn.model_selection import train_test_split
 """
@@ -121,7 +121,8 @@ import pandas as pd
 Creating Reader Features
 """
 setting_object = SettingsObject.Settings(Dictionary.string_settings_german_signal_path)
-
+option_problem = Dictionary.string_option_signals_images_problem
+options = [option_problem, 0, 60, 60]
 path_train_and_test_images = [setting_object.train_path,setting_object.test_path]
 number_of_classes = 59 # Start in 0
 percentages_sets = None  # Example
@@ -133,17 +134,16 @@ known_data_type = ''  # Contains the type of data if the data file contains an u
 """
 Creating Reader Features
 """
-reader_features = tfr.ReaderFeatures(set_data_files = path_train_and_test_images,number_of_classes = number_of_classes,
+reader_features = tfr.ReaderFeatures(set_data_files = path_train_and_test_images, number_of_classes = number_of_classes,
                                       labels_set = labels_set,
-                                      is_unique_csv = is_an_unique_csv,known_data_type = known_data_type,
+                                      is_unique_csv = is_an_unique_csv, known_data_type = known_data_type,
                                       percentages_sets = percentages_sets)
+
 """
 Creating Reader from ReaderFeatures
 """
-"""
-Creating Reader from ReaderFeatures
-"""
-tf_reader = tfr.Reader(reader_features = reader_features)  # Reader Object with all information
+
+tf_reader = tfr.Reader(type_problem=option_problem, reader_features=reader_features)  # Reader Object with all information
 
 """
 # --------------------------------------------------------------------------
@@ -160,18 +160,18 @@ Manipulate Reader with DataMining and update it.
 """
 Getting train, validation (if necessary) and test set.
 """
-test_set = tf_reader.test_set  # Test Set
 train_set = tf_reader.train_set  # Train Set
+test_set = tf_reader.test_set  # Test Set
+
 del reader_features
 del tf_reader
 
-option_problem = Dictionary.string_option_signals_images_problem
-
-models = models.TFModels(input=train_set[0],test=test_set[0],
+models = models.TFModels(setting_object=setting_object, option_problem=options,
+                         input_data=train_set[0],test=test_set[0],
                          input_labels=train_set[1],test_labels=test_set[1],
-                         number_of_classes=number_of_classes, setting_object=setting_object,
-                         option_problem=option_problem, load_model_configuration=True)
-models.convolution_model_image()
-
-
-
+                         number_of_classes=number_of_classes, type=None,
+                         validation=None, validation_labels=None,
+                         load_model_configuration=False)
+#with tf.device('/cpu:0'):  # CPU
+with tf.device('/gpu:0'):  # GPU
+    models.convolution_model_image()
