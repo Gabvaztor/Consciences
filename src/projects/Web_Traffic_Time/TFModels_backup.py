@@ -25,9 +25,6 @@ from __future__ import print_function
 '''LOCAL IMPORTS'''
 from UsefulTools.UtilsFunctions import *
 from UsefulTools.TensorFlowUtils import *
-from TFBoost.TFEncoder import Dictionary as dict
-from TFBoost.TFEncoder import Constant as const
-import SettingsObject
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -55,7 +52,6 @@ import matplotlib.pyplot as plt
 ''' TFLearn library. License MIT.
 Git Clone : https://github.com/tflearn/tflearn.git
 To install: pip3 install tflearn'''
-import tflearn
 
 '''"Best image library"
 pip install opencv-python'''
@@ -75,10 +71,9 @@ import json
 import traceback
 
 """ To work with numbers"""
-import numbers
 
 """ To work with types"""
-import types
+
 
 class TFModels():
     """

@@ -49,12 +49,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
 import TFBoost.TFReader as tfr
-import TFBoost.TFDataMining as tfd
 from TFBoost.TFEncoder import Dictionary
 from UsefulTools.UtilsFunctions import *
 import TFBoost.TFModels as models
-import SettingsObject
-
+from src import SettingsObject
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -79,25 +77,20 @@ import numpy as np
 # It is mandatory to install 'Numpy+MKL' before scipy.
 # http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
 # We can find scipi in the url: http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy'''
-import scipy.io as sio
 
 ''' Matlab URL: http://matplotlib.org/users/installing.html
 python -m pip3 install matplotlib'''
-import matplotlib.pyplot as plt
 
 ''' TFLearn library. License MIT.
 Git Clone : https://github.com/tflearn/tflearn.git
     To install: pip3 install tflearn'''
-import tflearn
 '''
  Sklearn(scikit-learn): Simple and efficient tools for data mining and data analysis
  To install: pip3 install -U scikit-learn
 '''
-from sklearn.model_selection import train_test_split
 """
 To install pandas: pip3 install pandas
 """
-import pandas as pd
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 # ---- GLOBAL VARIABLES ----

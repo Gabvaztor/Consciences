@@ -37,7 +37,7 @@ Notes:
 
 from UsefulTools.UtilsFunctions import *
 import TFBoost.TFModels as models
-import SettingsObject
+from src import SettingsObject
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

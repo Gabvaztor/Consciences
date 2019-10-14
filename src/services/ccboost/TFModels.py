@@ -26,11 +26,7 @@ from __future__ import print_function
 '''LOCAL IMPORTS'''
 from UsefulTools.UtilsFunctions import *
 from UsefulTools.TensorFlowUtils import *
-from TFBoost.TFEncoder import Dictionary as dict
-from TFBoost.TFEncoder import Constant as const
 from UsefulTools.Prediction import *
-import SettingsObject
-
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -53,7 +49,6 @@ import numpy as np
 
 ''' Matlab URL: http://matplotlib.org/users/installing.html'''
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 ''' Pillow URL: https://pillow.readthedocs.io/en/5.1.x/
 Problem with OpenCV on Raspbian. Installed Pillow. '''
@@ -64,7 +59,6 @@ import PIL
 ''' TFLearn library. License MIT.
 Git Clone : https://github.com/tflearn/tflearn.git
 To install: pip3 install tflearn'''
-import tflearn
 
 '''"Best image library"
 pip3 install opencv-python
@@ -81,21 +75,18 @@ import time
 import datetime
 
 """ To serialize object"""
-import json
 
 """ To print stacktrace"""
 import traceback
 
 """ To work with numbers"""
-import numbers
 
 """ To work with types"""
-import types
 
 """ To recollect python rash"""
 import gc
 
-from AsynchronousThreading import execute_asynchronous_thread
+from src.AsynchronousThreading import execute_asynchronous_thread
 
 global global_function
 global global_metadata
