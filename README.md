@@ -13,7 +13,8 @@ This project is being moved to a new github repository. Also, the main project i
 Through project, we are creating a framework thanks to which you can read any kind of tag labeled data (like Kaggle problems, CSV and images); create train, validation and test set from them; choose the best machine learning algorithm for your data, and, besides, change the algorithm features.
 
 Updating to Version 1.1:
-
+  
+  - New advanced and simplified structure
   - Using Tensorflow 2.0.0
 
 Update Version 0.1:
