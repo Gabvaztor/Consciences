@@ -11,7 +11,7 @@ This class contains useful functions
 # --------------------------------------------------------------------------
 """
 """LOCAL IMPORTS"""
-from TFBoost.TFEncoder import *
+from src.services.ccboost.TFEncoder import *
 
 '''Time library'''
 import time
@@ -461,7 +461,7 @@ def object_to_json(object, attributes_to_delete=None):
     except Exception as e:
         pt(e)
         pt(traceback.print_exc())
-        raise ValueError("PARAR")
+        raise ValueError("STOP")
     return json_string
 
 def show_actual_path():

@@ -3,7 +3,8 @@ This class is used in kaggle competitions
 """
 
 import json
-from UsefulTools.UtilsFunctions import *
+import os
+import src.utils.Folders as folders
 
 class Settings():
     _train_path = "D:\\"
@@ -142,8 +143,8 @@ class Settings():
         """
         # TODO (@gabvaztor) DOCs
         configuration = None
-        create_directory_from_fullpath(self.information_path)
-        create_file_from_fullpath(self.information_path)
+        folders.create_directory_from_fullpath(self.information_path)
+        folders.create_file_from_fullpath(self.information_path)
         if os.stat(self.information_path).st_size != 0:
             with open(self.information_path) as json_configuration:
                 dict = json.load(json_configuration)
@@ -156,8 +157,8 @@ class Settings():
         """
         # TODO (@gabvaztor) DOCS
         configuration = None
-        create_directory_from_fullpath(self.configuration_path)
-        create_file_from_fullpath(self.configuration_path)
+        folders.create_directory_from_fullpath(self.configuration_path)
+        folders.create_file_from_fullpath(self.configuration_path)
         try:
             if os.stat(self.configuration_path).st_size != 0:
                 with open(self.configuration_path) as json_configuration:

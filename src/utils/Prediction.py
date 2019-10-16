@@ -3,10 +3,8 @@
 
 """
 
-import TFBoost.TFEncoder as tfencoder
-import UsefulTools.UtilsFunctions as utils
-
-import json
+import src.services.ccboost.TFEncoder as tfencoder
+import src.utils.UtilsFunctions as utils
 
 class Prediction():
     """

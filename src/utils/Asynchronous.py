@@ -2,7 +2,7 @@
 
 """
 import multiprocessing
-from UsefulTools.UtilsFunctions import pt
+from src.utils.Prints import pt
 
 import traceback
 import json
@@ -65,9 +65,7 @@ def class_properties(object, attributes_to_delete=None):
 
 if __name__ == "__main__":
     pt("__name__", __name__)
-else:
-    pt("__name__", __name__)
-    from TFBoost.TFModels import global_function, global_metadata
+    from src.services.ccboost.TFModels import global_function, global_metadata
     arguments = global_metadata
     Multiprocess(functions=object_to_json, arguments=(arguments,))
     #Multiprocess(functions=global_function, arguments=arguments)
