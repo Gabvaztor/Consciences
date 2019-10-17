@@ -48,10 +48,10 @@ sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
-import src.services.ccboost.TFReader as tfr
-from src.utils import Dictionary
+import src.services.preparation.CCReader as tfr
+from src.utils.Dictionary import Dictionary
 from src.utils.UtilsFunctions import *
-import src.services.ccboost.TFModels as models
+import src.services.modeling.CCModels as models
 from src.config import SettingsObject
 
 ''' TensorFlow: https://www.tensorflow.org/

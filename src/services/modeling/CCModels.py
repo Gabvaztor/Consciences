@@ -24,10 +24,18 @@ from __future__ import print_function
 """
 
 '''LOCAL IMPORTS'''
-from src.utils.UtilsFunctions import *
-from src.utils.UtilsFunctions import pt
-from src.utils.TensorFlowUtils import *
+
+import src.utils.Inputs as inputs
 import src.services.processing.CCPrediction as PREDICTION
+import src.utils.UtilsFunctions as utils
+import src.utils.Jsons as jsons
+import src.utils.Folders as folders
+import src.services.processing.Prediction as prediction
+
+from src.utils.Errors import Errors
+from src.utils.Constants import Constant
+from src.utils.Dictionary import Dictionary
+from src.utils.Prints import pt
 from src.utils.Logger import Logger
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
 
@@ -89,10 +97,12 @@ import traceback
 """ To recollect python rash"""
 import gc
 
-global global_function
-global global_metadata
-input_value = ""
-console_words_option = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
+import os
+
+global GLOBAL_FUNCTION
+global GLOBAL_METADATA
+INPUT_VALUE = ""
+CONSOLE_WORDS_OPTION = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
 LOGGER = Logger()
 
 class TFModels():
@@ -197,7 +207,7 @@ class TFModels():
         self._save_and_restart = False  # All history and metadata will be saved in a different folder and the execution
         # will be restarted
         if self.save_and_restart and not self.restore_to_predict:
-            save_and_restart(self.settings_object.model_path)
+            utils.save_and_restart(self.settings_object.model_path)
         # SAVE AND LOAD MODEL
         # If load_model_configuration is True, then it will load a configuration from settings_object method
         # TODO (@gabvaztor) Check when temp file exists and, if timestamp is more actual, load it.
@@ -688,7 +698,7 @@ class TFModels():
         try:
             save_path = self.settings_object.configuration_path
             if save_type == 2:
-                save_path = get_temp_file_from_fullpath(save_path)
+                save_path = utils.get_temp_file_from_fullpath(save_path)
             execute_asynchronous_thread(functions=self._save_model_to_json,
                                         arguments=(save_path,
                                                    attributes_to_delete_configuration,),
@@ -725,7 +735,7 @@ class TFModels():
             traceback.print_exc()
             pass
 
-    @timed
+    #@timed
     def convolution_model_image(self):
         """
         Generic convolutional model
@@ -795,6 +805,7 @@ class TFModels():
         x_input_pred = np.asarray([x_input_pred])
         feed_dict_prediction = {x_input_tensor: x_input_pred, keep_probably: 1.0}
         i = 0
+        prediction = None
         if x_input_pred is not None:
             while i < 1:
                 start_datetime_ = datetime.datetime.now()
@@ -808,7 +819,7 @@ class TFModels():
             path_saved = None
             information = self.options[0]
             try:
-                prediction_class = ImagePrediction(information=information, real_label=real_label,
+                prediction_class = prediction.ImagePrediction(information=information, real_label=real_label,
                                                 image_fullpath=input_path,
                                                 prediction_label=int(np.argmax(prediction)))
                 prediction_class.save_json(save_fullpath=self.settings_object.submission_path)
@@ -893,7 +904,7 @@ class TFModels():
         should_save = 0
         if input_value != "":
             if input_value == "HELP":
-                pt("WORDS", console_words_option)
+                pt("WORDS", CONSOLE_WORDS_OPTION)
                 pt("STOP", "Stop current training")
                 pt("WAIT -t", "If you write WAIT, the training will be paused for 10 seconds. If you write a -t time "
                               "(WAIT -20), the training will be paused for 't' time.")
@@ -976,7 +987,7 @@ class TFModels():
                             pt("actual_train_accuracy", self.train_accuracy)
                             pt("actual_test_accuracy", self.test_accuracy)
                             pt("actual_validation_accuracy", self.validation_accuracy)
-                            option_choosed = recurrent_ask_to_save_model()
+                            option_choosed = inputs.recurrent_ask_to_save_model()
                         else:
                             option_choosed = True
                         if option_choosed:
@@ -1073,10 +1084,10 @@ class TFModels():
         filepath = ""
         try:
             pt("Saving model " + type_file + " ... DO NOT STOP PYTHON PROCESS")
-            json = object_to_json(object=self, attributes_to_delete=attributes_to_delete)
-            write_string_to_pathfile(json, fullpath)
-            filepath = create_historic_folder(fullpath, type_file, accuracy)
-            write_string_to_pathfile(json, filepath)
+            json = jsons.object_to_json(object=self, attributes_to_delete=attributes_to_delete)
+            folders.write_string_to_pathfile(json, fullpath)
+            filepath = utils.create_historic_folder(fullpath, type_file, accuracy)
+            folders.write_string_to_pathfile(json, filepath)
             pt("Model " + type_file + " has been saved")
         except Exception as e:
             pt("Can not get json from class to save " + type_file + " file.")
@@ -1107,7 +1118,7 @@ class TFModels():
                     pt("Model restored without problems")
                 else:
                     if self.ask_to_continue_creating_model_without_exist:
-                        response = recurrent_ask_to_continue_without_load_model()
+                        response = inputs.recurrent_ask_to_continue_without_load_model()
                         if not response:
                             raise Exception()
                     else:
@@ -1229,7 +1240,7 @@ class TFModels():
             try:
                 fullpath_save = self.settings_object.model_path + "model.ckpt"
                 if save_type == 2:  # Force save, temp save
-                    fullpath_save = get_temp_file_from_fullpath(fullpath_save)
+                    fullpath_save = utils.get_temp_file_from_fullpath(fullpath_save)
                     pt("Saving TEMP model... DO NOT STOP PYTHON PROCESS")
                 else:
                     pt("Saving model... DO NOT STOP PYTHON PROCESS")
@@ -1247,7 +1258,7 @@ class TFModels():
                         accuracy = self.test_accuracy
                     information_path = self.settings_object.information_path
                     if save_type == 2:
-                        information_path = get_temp_file_from_fullpath(information_path)
+                        information_path = utils.get_temp_file_from_fullpath(information_path)
                     filepath = self._save_model_to_json(
                         fullpath=information_path,
                         attributes_to_delete=Constant.attributes_to_delete_information,
@@ -1270,7 +1281,7 @@ class TFModels():
         """
         if is_new_epoch_flag:
             accuracies_train, accuracies_validation, accuracies_test, \
-            loss_train, loss_validation, loss_test = preprocess_lists([accuracies_train, accuracies_validation,
+            loss_train, loss_validation, loss_test = utils.preprocess_lists([accuracies_train, accuracies_validation,
                                                                        accuracies_test, loss_train, loss_validation,
                                                                        loss_test], index_to_eliminate=2)
 
@@ -1284,7 +1295,7 @@ class TFModels():
         if accuracies_test:
             plt.plot(accuracies_test, 'g')
         if folder_to_save:
-            folder = get_directory_from_filepath(folder_to_save)
+            folder = folders.get_directory_from_filepath(folder_to_save)
             complete_name = folder + "\\graph_accuracy" + Dictionary.string_extension_png
             if self.save_graphs_images or is_new_epoch_flag:
                 plt.savefig(complete_name)
@@ -1302,7 +1313,7 @@ class TFModels():
         if (loss_train or loss_validation or loss_test) and show_graphs:
             loss_plot.show()
         if folder_to_save:
-            folder = get_directory_from_filepath(folder_to_save)
+            folder = folders.get_directory_from_filepath(folder_to_save)
             complete_name = folder + "\\graph_loss" + Dictionary.string_extension_png
             if self.save_graphs_images or is_new_epoch_flag:
                 plt.savefig(complete_name)
@@ -1357,7 +1368,7 @@ class TFModels():
         actual_delta = self.delta_time  # Last delta time if exists
         # TO STATISTICS
         # To load accuracies and losses
-        accuracies_train, accuracies_test, loss_train, loss_test = load_accuracies_and_losses(
+        accuracies_train, accuracies_test, loss_train, loss_test = utils.load_accuracies_and_losses(
             self.settings_object.accuracies_losses_path, self.restore_model)
 
         # Folders and file where information and configuration files will be saved.
@@ -1408,7 +1419,7 @@ class TFModels():
                 with tf.device('/cpu:0'):
                     numpy_arrays = [accuracies_train, accuracies_test, loss_train, loss_test]
                     numpy_names = ["accuracies_train", "accuracies_test", "loss_train", "loss_test"]
-                    execute_asynchronous_thread(functions=save_numpy_arrays_generic,
+                    execute_asynchronous_thread(functions=utils.save_numpy_arrays_generic,
                                                 arguments=(self.settings_object.accuracies_losses_path, numpy_arrays,
                                                            numpy_names),
                                                 kwargs=None)
@@ -1439,7 +1450,7 @@ class TFModels():
                     pt('test_accuracy', self.test_accuracy)
                     pt('index_buffer_data', self.index_buffer_data)
                     pt('Mean train accuracy (actual epoch)', self.train_accuracy_sum / num_train)
-                    pt('WORDS: ', str(console_words_option))
+                    pt('WORDS: ', str(CONSOLE_WORDS_OPTION))
 
                 # Update indexes
                 # Update num_epochs_counts
@@ -1548,7 +1559,7 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
                 else:
                     folder = "\\train\\"
                 fullpath_to_save = path_to_save + folder + filename
-                create_directory_from_fullpath(fullpath=fullpath_to_save)
+                folders.create_directory_from_fullpath(fullpath=fullpath_to_save)
                 PIL.Image.fromarray(image).save(fullpath_to_save + ".jpeg")
         else:
             image = np.asarray(image)

@@ -11,7 +11,10 @@ This class contains useful functions
 # --------------------------------------------------------------------------
 """
 """LOCAL IMPORTS"""
-from src.services.ccboost.TFEncoder import *
+from .Dictionary import Dictionary
+from .Prints import pt
+from .Errors import Errors
+from .Constants import Constant
 
 '''Time library'''
 import time
@@ -43,24 +46,6 @@ import json
 import collections
 
 import traceback
-
-import sys
-
-def pt(title=None, text=None, same_line=False):
-    """
-    Use the print function to print a title and an object coverted to string
-    :param title:
-    :param text:
-    """
-    if text is None:
-        text = title
-        title = Dictionary.string_separator
-    else:
-        title += ': '
-    if same_line:
-        print(str(title) + str(text), end="\r")
-    else:
-        print(str(title) + " \n " + str(text))
 
 
 def timed(method):
@@ -125,63 +110,6 @@ def write_json_to_pathfile(json, filepath):
     except:
         raise ValueError(Errors.write_string_to_file)
 
-
-def recurrent_method_pass_true_or_false(question, method):
-    """
-
-    :param question:
-    :param method:
-    :return:
-    """
-    # TODO (@gabvaztor) Docs
-    response = False
-    pt(Dictionary.string_get_response)
-    save = str(input(question + " ")).upper()
-    if save == Dictionary.string_char_Y:
-        response = True
-    elif save != Dictionary.string_char_N:
-        method()
-    return response
-
-
-def recurrent_ask_to_save_model():
-    """
-    Wait user to get response to save a model
-    :return: 
-    """
-    method = recurrent_ask_to_save_model
-    response = recurrent_method_pass_true_or_false(question=Dictionary.string_want_to_save,
-                                                   method=method)
-    return response
-
-
-def recurrent_ask_to_continue_without_load_model():
-    """
-    Wait user to get response to save a model
-    :return: 
-    """
-    method = recurrent_ask_to_continue_without_load_model
-    response = recurrent_method_pass_true_or_false(question=Dictionary.string_want_to_continue_without_load,
-                                                   method=method)
-    return response
-
-
-def file_exists_in_path_or_create_path(filepath):
-    """
-    Check if filepath exists and, if not, it creates the dir
-    :param filepath: the path to check
-    :return True if exists filepath, False otherwise
-    """
-    try:
-        create_directory_from_fullpath(filepath)
-        if os.path.exists(filepath):
-            return True
-        else:
-            return False
-    except:
-        raise ValueError(Errors.check_dir_exists_and_create)
-
-
 def factorial(num):
     """
     Factorial of a number. Recursive.
@@ -191,28 +119,6 @@ def factorial(num):
     if num > 1:
         num = num * factorial(num - 1)
     return num
-
-
-def create_directory_from_fullpath(fullpath):
-    """
-    Create directory from a fullpath if it not exists.
-    """
-    # TODO (@gabvaztor) Check errors
-    directory = os.path.dirname(fullpath)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    return directory
-
-
-def create_file_from_fullpath(fullpath):
-    """
-    Create file from a fullpath if it not exists.
-    """
-    # TODO (@gabvaztor) Check errors
-    if not os.path.exists(fullpath):  # To create file
-        file = open(fullpath, 'w+')
-        file.close()
-
 
 def create_historic_folder(filepath, type_file, test_accuracy=""):
     """
@@ -233,15 +139,6 @@ def create_historic_folder(filepath, type_file, test_accuracy=""):
     folder = directory + information_folder
     create_directory_from_fullpath(folder)
     return folder + filename
-
-
-def get_directory_from_filepath(filepath):
-    return os.path.dirname(filepath)
-
-
-def get_filename_from_filepath(filepath):
-    return os.path.basename(filepath)
-
 
 def preprocess_lists(lists, index_to_eliminate=2):
     """
