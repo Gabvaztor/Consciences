@@ -27,9 +27,9 @@ Notes:
     * This file use TensorFlow version >1.0.
 """
 
-from UsefulTools.UtilsFunctions import *
-import TFBoost.TFModels as models
-from src import SettingsObject
+from src.utils.UtilsFunctions import *
+import src.services.modeling.CCModels as models
+from src.config import SettingsObject
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 

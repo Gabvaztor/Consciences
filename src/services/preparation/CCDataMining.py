@@ -21,7 +21,7 @@ https://google.github.io/styleguide/pyguide.html
 # --------------------------------------------------------------------------
 """Reader class
 """
-from TFBoost.TFReader import Reader
+from src.services.preparation.CCReader import Reader
 # --------------------------------------------------------------------------
 
 class DataMining(Reader):

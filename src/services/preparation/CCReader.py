@@ -33,9 +33,9 @@ Here you can download the library: https://pypi.python.org/pypi/easygui#download
 It had been used the version: 0.98.1
 '''
 
-from TFBoost.TFEncoder import Dictionary as Dictionary
-from UsefulTools.UtilsFunctions import *
-from TFBoost.TFEncoder import *
+from src.utils.Dictionary import Dictionary
+from src.utils.Errors import Errors
+from src.utils.UtilsFunctions import pt, save_numpy_arrays_generic, convert_to_decimal, save_submission_to_csv
 
 # --------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ class Reader(object):
         else:
             self.multiple_data_files(type_problem)
 
-    @timed
+    #@timed
     def unique_data_file(self, type_problem):
         """
         This method will be used only when one data file was passed.
@@ -218,7 +218,7 @@ class Reader(object):
                 raise RuntimeError(Errors.percentages_sets)
         return there_is_validation, train_validation_test_percentages
 
-    @timed
+    #@timed
     def read_web_traffic_data_and_create_files(self, is_necessary_create_files=False):
         """
         Create 9 csv files each one with "Page_Date,Visits" as header. 

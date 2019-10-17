@@ -20,7 +20,7 @@ The code's structure is:
     - Training and test
     - Show final conclusions
 
-Style: "Google Python Style Guide" 
+Style: "Google Python Style Guide"
 https://google.github.io/styleguide/pyguide.html
 
 Notes:
@@ -48,11 +48,11 @@ sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
-import TFBoost.TFReader as tfr
-from TFBoost.TFEncoder import Dictionary
-from UsefulTools.UtilsFunctions import *
-import TFBoost.TFModels as models
-from src import SettingsObject
+import src.services.ccboost.TFReader as tfr
+from src.utils import Dictionary
+from src.utils.UtilsFunctions import *
+import src.services.ccboost.TFModels as models
+from src.config import SettingsObject
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -150,9 +150,9 @@ else:
     """
     reader_features = tfr.ReaderFeatures(set_data_files = path_train_and_test_images,
                                          number_of_classes = number_of_classes,
-                                          labels_set = labels_set,
-                                          is_unique_csv = is_an_unique_csv, known_data_type = known_data_type,
-                                          percentages_sets = percentages_sets)
+                                         labels_set = labels_set,
+                                         is_unique_csv = is_an_unique_csv, known_data_type = known_data_type,
+                                         percentages_sets = percentages_sets)
 
     """
     Creating Reader from ReaderFeatures

@@ -9,7 +9,7 @@ def dict_return(key):
     # TODO Check valid values
     return DICT[key]
 
-class Dictionary(object):
+class Dictionary:
     """
     Dictionary:Encoder
     Each attribute will be a dictionary's key

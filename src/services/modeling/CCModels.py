@@ -24,9 +24,12 @@ from __future__ import print_function
 """
 
 '''LOCAL IMPORTS'''
-from UsefulTools.UtilsFunctions import *
-from UsefulTools.TensorFlowUtils import *
-from UsefulTools.Prediction import *
+from src.utils.UtilsFunctions import *
+from src.utils.UtilsFunctions import pt
+from src.utils.TensorFlowUtils import *
+import src.services.processing.CCPrediction as PREDICTION
+from src.utils.Logger import Logger
+from src.utils.AsynchronousThreading import execute_asynchronous_thread
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -53,7 +56,7 @@ import matplotlib.pyplot as plt
 ''' Pillow URL: https://pillow.readthedocs.io/en/5.1.x/
 Problem with OpenCV on Raspbian. Installed Pillow. '''
 
-import PIL.Image as Image
+import PIL.Image
 import PIL
 
 ''' TFLearn library. License MIT.
@@ -86,12 +89,11 @@ import traceback
 """ To recollect python rash"""
 import gc
 
-from src.AsynchronousThreading import execute_asynchronous_thread
-
 global global_function
 global global_metadata
 input_value = ""
 console_words_option = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
+LOGGER = Logger()
 
 class TFModels():
     """
@@ -777,18 +779,7 @@ class TFModels():
                                                   real_label=real_label, input_path=input_path)
             pt("Prediction saved in", saved_path)
         except Exception as err:
-            self.write_log_error(err)
-
-    def write_log_error(self, err):
-        import sys
-        exc_type, exc_obj, exc_tb = sys.exc_info()  # this is to get error line number and description.
-        file_name = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]  # to get File Name.
-        error_string = "ERROR : Error Msg:{},File Name : {}, Line no : {}\n".format(err, file_name,
-                                                                                    exc_tb.tb_lineno)
-        pt(error_string)
-        file_log = open("python_prediction_error_log.log", "a")
-        file_log.write(error_string + "\n\n" + str(err))
-        file_log.close()
+            LOGGER.write_log_error(err)
 
     def test_prediction(self, sess, x_input_tensor, y_prediction, x_input_pred, keep_probably, real_label=None,
                         input_path=None):
@@ -1531,16 +1522,16 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
     fullpath_image = image
     if not cv2_flag and not debug_mode:
         if image_type == 0:  # GrayScale
-            image = Image.open(image).convert('L')
+            image = PIL.Image.open(image).convert('L')
         else:
-            image = Image.open(image)
+            image = PIL.Image.open(image)
         #pil_image_resized_antialias = np.array(image.resize((height, width), PIL.Image.ANTIALIAS))
         # Save resized
         if to_save or to_predict:
             #  TODO(@gabvaztor) Delete width black pixels, resize and save to x,y resolution
             # Resize image and modify
             image_array = np.asarray(image)[:, 140:-127, :]
-            image = Image.fromarray(image_array)
+            image = PIL.Image.fromarray(image_array)
             width2, height2 = image.size
             pt("width2", width2)
             pt("height2", height2)
@@ -1558,7 +1549,7 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
                     folder = "\\train\\"
                 fullpath_to_save = path_to_save + folder + filename
                 create_directory_from_fullpath(fullpath=fullpath_to_save)
-                Image.fromarray(image).save(fullpath_to_save + ".jpeg")
+                PIL.Image.fromarray(image).save(fullpath_to_save + ".jpeg")
         else:
             image = np.asarray(image)
         return image
