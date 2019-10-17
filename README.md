@@ -51,38 +51,38 @@ https://google.github.io/styleguide/pyguide.html
 [http://aiconscience.ddns.net/ai-models/](http://aiconscience.ddns.net/ai-models/)
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/tfboost-framework-web-example.png"><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/tfboost-framework-web-example.png"><br>
 <br>
 </div>
 
 **TensorFlow Boost works as follows:**
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/CSV_Diagram.png"><br><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/CSV_Diagram.png"><br><br>
 </div>
 
 **An example of 'information.json':**
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/Information_Example.png"><br><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/Information_Example.png"><br><br>
 </div>
 
 **An example of a Accuracy Graph:**
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/Graph_Accuracy.png"><br><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/Graph_Accuracy.png"><br><br>
 </div>
 
 **An example of a Loss Graph:**
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/Graph_Loss.png"><br><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/Graph_Loss.png"><br><br>
 </div>
 
 **An example of code: Step by step structure (Python-Tensorflow Code)**
 
 <div align="center">
-<img src="https://github.com/Gabvaztor/TFBoost/blob/master/Documentation/Images/Example_Code.png"><br><br>
+<img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/Example_Code.png"><br><br>
 </div>
 
 "TensorFlow, the TensorFlow logo and any related marks are trademarks of Google Inc."
