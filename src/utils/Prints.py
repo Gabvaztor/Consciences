@@ -17,3 +17,11 @@ def pt(title=None, text=None, same_line=False):
         print(str(title) + str(text), end="\r")
     else:
         print(str(title) + " \n " + str(text))
+
+def show_percent_by_total(total, count_number):
+    same_line = False if total == count_number else True
+    pt("Total Size", total, same_line=same_line)
+    pt("Count number", count_number, same_line=same_line)
+    progress = float(((count_number * 100) / total))
+    progress = "{0:.3f}".format(progress)
+    pt("Progress percent", progress + "%", same_line=same_line)

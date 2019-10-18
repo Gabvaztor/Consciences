@@ -49,16 +49,6 @@ def file_exists_in_path_or_create_path(filepath):
     except:
         raise ValueError(Errors.check_dir_exists_and_create)
 
-def create_directory_from_fullpath(fullpath):
-    """
-    Create directory from a fullpath if it not exists.
-    """
-    # TODO (@gabvaztor) Check errors
-    directory = os.path.dirname(fullpath)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    return directory
-
 def get_directory_from_filepath(filepath):
     return os.path.dirname(filepath)
 

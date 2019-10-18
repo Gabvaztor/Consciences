@@ -34,7 +34,6 @@ It had been used the version: 0.98.1
 '''
 
 from src.utils.Dictionary import Dictionary
-from src.config.Projects import Projects
 from src.utils.Errors import Errors
 import src.utils.UtilsFunctions as utils
 from src.utils.Prints import pt
@@ -388,13 +387,7 @@ class Searcher(Reader):
 
         if setting_object.labels_path:
             labels_path = setting_object.labels_path
-            # imports Dynamically
-            import importlib
-            reader = importlib.import_module(".Reader", package="src.projects." + problem)
-            reader.read_problem()
-
-            if problem == Projects.retinopathy_k_problem_id:
-
+            if problem == Dictionary.string_option_retinopathy_k_problem:
                 # Read CSV Labels
                 # TODO (@gabvaztor) Do generic import if more than one problem use it
                 import pandas as pd
@@ -419,7 +412,7 @@ class Searcher(Reader):
                     progress = "{0:.3f}".format(progress)
                     pt("Progress percent",  progress + "%", same_line=True)
 
-                    if problem == Projects.retinopathy_k_problem_id:
+                    if problem == Dictionary.string_option_retinopathy_k_problem:
                         if (file_name.endswith(Dictionary.string_extension_jpeg)):
                             full_path = os.path.join(root, file_name)
                             labels = np.zeros(self.features.number_of_classes, dtype=np.float32)
@@ -435,7 +428,7 @@ class Searcher(Reader):
                                 if Dictionary.string_test in path:
                                     self.y_test.append(list(labels))
                                     self.x_test.append(full_path)
-                    elif problem == Projects.signals_images_problem_id:
+                    elif problem == Dictionary.string_option_signals_images_problem:
                         self.find_train_and_test_sets_from_path_signals()
         pt('Time to create data_sets', str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start_time)))))
         pt("Finish creating train and test/validation data...")

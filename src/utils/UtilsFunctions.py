@@ -14,7 +14,9 @@ This class contains useful functions
 from .Dictionary import Dictionary
 from .Prints import pt
 from .Errors import Errors
-from .Constants import Constant
+
+import src.utils.Folders as folders
+
 
 '''Time library'''
 import time
@@ -89,7 +91,7 @@ def write_string_to_pathfile(string, filepath):
     :param path: path where write
     """
     try:
-        create_directory_from_fullpath(filepath)
+        folders.create_directory_from_fullpath(filepath)
         file = open(filepath, 'w+')
         file.write(str(string))
     except:
@@ -103,7 +105,7 @@ def write_json_to_pathfile(json, filepath):
     :param path: path where write
     """
     try:
-        create_directory_from_fullpath(filepath)
+        folders.create_directory_from_fullpath(filepath)
         with open(filepath, 'w+') as file:
             # file = open(filepath, 'w+')
             file.write(str(json))
@@ -137,7 +139,7 @@ def create_historic_folder(filepath, type_file, test_accuracy=""):
     information_folder = "\\History_Information\\" + type_file + "\\" + str(test_accuracy) + low_stripe + \
                          actual_time + "\\"
     folder = directory + information_folder
-    create_directory_from_fullpath(folder)
+    folders.create_directory_from_fullpath(folder)
     return folder + filename
 
 def preprocess_lists(lists, index_to_eliminate=2):
@@ -168,7 +170,7 @@ def save_numpy_arrays_generic(folder_to_save, numpy_files, names=None):
 
     """
     # TODO (@gabvaztor) finish Docs
-    create_directory_from_fullpath(folder_to_save)
+    folders.create_directory_from_fullpath(folder_to_save)
     for index in range(len(numpy_files)):
         if names:
             np.save(folder_to_save + names[index], numpy_files[index])
@@ -188,7 +190,7 @@ def load_numpy_arrays_generic(path_to_load, names):
     files_to_return = []
     npy_extension = Dictionary.string_npy_extension
     for i in range(len(names)):
-        if file_exists_in_path_or_create_path(path_to_load + names[i] + npy_extension):
+        if folders.file_exists_in_path_or_create_path(path_to_load + names[i] + npy_extension):
             file = np.load(path_to_load + names[i] + npy_extension)
             files_to_return.append(file)
         else:
@@ -211,7 +213,7 @@ def load_accuracies_and_losses(path_to_load, flag_restore_model=False):
             filename_validation_accuracies = Dictionary.filename_validation_accuracies + npy_extension
             filename_train_losses = Dictionary.filename_train_losses + npy_extension
             filename_validation_losses = Dictionary.filename_validation_losses + npy_extension
-            if file_exists_in_path_or_create_path(path_to_load + filename_train_accuracies):
+            if folders.file_exists_in_path_or_create_path(path_to_load + filename_train_accuracies):
                 accuracies_train = list(np.load(path_to_load + filename_train_accuracies))
                 accuracies_validation = list(np.load(path_to_load + filename_validation_accuracies))
                 loss_train = list(np.load(path_to_load + filename_train_losses))
@@ -227,7 +229,7 @@ def load_4_numpy_files(path_to_load, names_to_load_4):
     # TODO (@gabvaztor) Docs
     npy_extension = Dictionary.string_npy_extension
     for i in range(0, 4):
-        file_exists_in_path_or_create_path(path_to_load + names_to_load_4[i])
+        folders.file_exists_in_path_or_create_path(path_to_load + names_to_load_4[i])
     file_1 = np.load(path_to_load + names_to_load_4[0] + npy_extension)
     file_2 = np.load(path_to_load + names_to_load_4[1] + npy_extension)
     file_3 = np.load(path_to_load + names_to_load_4[2] + npy_extension)
@@ -242,9 +244,9 @@ def save_and_restart(path_to_backup):
     :param path_to_backup: Path to do a backup and save it in a different folder
     """
     actual_time = str(time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.gmtime(time.time())))
-    to_copy = get_directory_from_filepath(path_to_backup) + "\\"
-    to_paste = get_directory_from_filepath(
-        get_directory_from_filepath(to_copy)) + "\\" + "Models_Backup(" + actual_time + ")"
+    to_copy = folders.get_directory_from_filepath(path_to_backup) + "\\"
+    to_paste = folders.get_directory_from_filepath(
+        folders.get_directory_from_filepath(to_copy)) + "\\" + "Models_Backup(" + actual_time + ")"
     pt("Doing Models backup ...")
     # Do backup
     make_archive(to_paste, 'zip', to_copy)
@@ -376,7 +378,7 @@ def get_temp_file_from_fullpath(fullpath):
     """
     basename = os.path.basename(fullpath)
     path = os.path.dirname(fullpath) + "\\temp\\"
-    create_directory_from_fullpath(path)
+    folders.create_directory_from_fullpath(path)
 
     return path + basename
 
@@ -461,7 +463,7 @@ def check_file_exists_and_change_name(path, char="", index=None):
         index: actual index
     Returns: new path
     """
-    if file_exists_in_path_or_create_path(path):
+    if folders.file_exists_in_path_or_create_path(path):
         name = os.path.splitext(path)[0]
         extension = os.path.splitext(path)[1]
         if index == 0 or is_none(index):

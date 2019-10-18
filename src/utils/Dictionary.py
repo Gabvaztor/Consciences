@@ -74,6 +74,7 @@ class Dictionary:
     
     Here will be all problems to load configuration
     """
+    """
     # TODO(@gabvaztor) Create new Dict (or class) to contain the different parts of Dictionary
     # Settings path (for save models) (it has the same configuration that kaggle submit best practice)
     string_settings_sberbank_russian_houssing_market_path = "../Settings/Sberbank_Russian_Houssing_Market/SETTINGS.json"
@@ -85,6 +86,7 @@ class Dictionary:
     string_settings_web_traffic = "../Settings/Web_Traffic_Time/SETTINGS.json"
 
     string_settings_retinopathy_k = "../Settings/Retinopathy_k/SETTINGS.json"
+    """
     """
     STRING FILENAMES
     """
@@ -100,15 +102,6 @@ class Dictionary:
     
     Here you add the id option of your problem
     """
-    # Option signals image problem
-    string_option_signals_images_problem = 'signals_images_problems'
-    # Option german prizes problem
-    string_option_german_prizes_problem = 'german_prizes_problem'
-    # Option zillow price problem
-    string_option_zillow_price_problem = 'zillow_price_problem'
-    # Option zillow price problem
-    string_option_web_traffic_problem = 'web_traffic_problem'
-    # Option Breast Cancer Wisconsin problem
-    string_breast_cancer_wisconsin_problem = 'web_traffic_problem'
-    # Option Retinopathy_K problem
-    string_option_retinopathy_k_problem = "retinopathy_k_problem"
+
+    string_option_gatos_id = "problem_id"
+    string_option_gatos_id_setting = "../projects/" + string_option_gatos_id + "/SETTINGS.json"

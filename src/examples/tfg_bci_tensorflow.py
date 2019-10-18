@@ -817,7 +817,6 @@ def getx_all(option, testSetToAccuracy):
     for mathFileName in allMathFiles:
         completePath = path + mathFileName + extension
         print (completePath)
-        asdasj
         # Cargamos el contenido del mat
         mat_contents = sio.loadmat(completePath)['matrix2']
         # Número de columnas de la matriz

@@ -26,9 +26,11 @@ from __future__ import print_function
 '''LOCAL IMPORTS'''
 
 import src.utils.Inputs as inputs
+import src.services.processing.CCPrediction as PREDICTION
 import src.utils.UtilsFunctions as utils
 import src.utils.Jsons as jsons
 import src.utils.Folders as folders
+import src.services.processing.Prediction as prediction
 
 from src.utils.Errors import Errors
 from src.utils.Constants import Constant

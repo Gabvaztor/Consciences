@@ -1,9 +1,11 @@
 """
 #3FXIAp5K
 """
-import time
-from config.GlobalSettings import DEBUG_MODE
 
+from .GlobalSettings import DEBUG_MODE
+from src.utils.Prints import pt
+
+import time
 import types
 import functools
 
@@ -33,31 +35,44 @@ class DecoratorClass(object):
     def __decorate_all_in_module(self, modules, decorator):
         for module in modules:
             for name in dir(module):
-                obj = getattr(module, name)
-                if isinstance(obj, types.FunctionType):
-                    setattr(module, name, decorator(obj))
+                try:
+                    obj = getattr(module, name)
+                    if isinstance(obj, types.FunctionType):
+                        setattr(module, name, decorator(obj))
+                except Exception as e:
+                    pass
 
-    def __global_decorator(self):
+    @staticmethod
+    def __global_decorator():
         def msg_decorator(function):
             @functools.wraps(function)
             def inner_dec(*args, **kwargs):
-                method_str = str(function)[10:-23]
-                method_separator_start = self.__method_separator(method_name=method_str, step=1)
-                method_separator_end = self.__method_separator(method_name=method_str, step=3)
-                print(method_separator_start)
+                method_str = ""
                 start = time.time()
+                method_separator_end = ""
+                method_separator_start = ""
+                try:
+                    method_str = str(function)[10:-23]
+                    method_separator_start = DecoratorClass().__method_separator(method_name=method_str, step=1)
+                    method_separator_end = DecoratorClass().__method_separator(method_name=method_str, step=3)
+                    pt(method_separator_start)
+                except:
+                    pt(method_separator_start)
                 try:
                     return function(*args, DEBUG=DEBUG_MODE, **kwargs)
                 except TypeError:  # Function has not kwargs
-                    return function(*args, **kwargs)
+                    try:
+                        return function(*args, **kwargs)
+                    except:
+                        return function()
                 finally:
                     """
                     print("Running time method: \"" + str(method_str) + "\"",
                           str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start)))))
                     """
-                    print("\"" + str(method_str) + "\"",
-                          str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start)))))
-                    print(method_separator_end)
+                    end_str = "\"" + str(method_str) + "\"" + \
+                              str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start))))
+                    pt(method_separator_end + " " + end_str)
             inner_dec.__name__ = function.__name__
             inner_dec.__doc__ = function.__doc__
             return inner_dec
@@ -72,4 +87,6 @@ class DecoratorClass(object):
         return wrapper
 
     def start_wrapper_decoration(self, modules):
+        #if not isinstance(modules, list):
+        #    modules = list(modules)
         self.__decorate_all_in_module(modules=modules, decorator=self.__global_decorator())

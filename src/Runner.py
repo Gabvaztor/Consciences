@@ -42,25 +42,29 @@ to code expressively, clearly and efficiently.
 Here you can download the library: https://pypi.python.org/pypi/easygui#downloads
 It had been used the version: 0.98.1
 '''
-import sys, os
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
 import src.services.preparation.CCReader as tfr
-from src.utils.Dictionary import Dictionary
-from src.utils.UtilsFunctions import *
 import src.services.modeling.CCModels as models
-from src.config import SettingsObject
+from src.config.Projects import Projects
+from src.utils.Dictionary import Dictionary
+from src.utils.Prints import pt
+from src.config.Configurator import Configurator
+
+import tensorflow as tf
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
 *CPU: pip3 install --upgrade tensorflow
 *GPU: pip3 install --upgrade tensorflow-gpu
 '''
-#import tensorflow as tf
-#print("TensorFlow: " + tf.__version__)
+# import tensorflow as tf
+# print("TensorFlow: " + tf.__version__)
 
 
 ''' Numpy is an extension to the Python programming language, adding support for large,
@@ -115,14 +119,17 @@ To install pandas: pip3 install pandas
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
+
+CONFIGURATOR = Configurator().run()
+
 """
 Creating Reader Features
 """
-option_problem = Dictionary.string_option_retinopathy_k_problem
-setting_object = SettingsObject.Settings(Dictionary.string_settings_retinopathy_k)
+option_problem = Projects.retinopathy_k_problem_id
+setting_object = Projects.get_settings()
 options = [option_problem, 1, 720, 1280]
 path_train_and_test_images = [setting_object.train_path, setting_object.test_path]
-number_of_classes = 5 # Start in 0
+number_of_classes = 5  # Start in 0
 percentages_sets = None  # Example
 labels_set = [Dictionary.string_labels_type_option_hierarchy]
 is_an_unique_csv = False  # If this variable is true, then only one CSV file will be passed and it will be treated like
@@ -130,7 +137,7 @@ is_an_unique_csv = False  # If this variable is true, then only one CSV file wil
 known_data_type = ''  # Contains the type of data if the data file contains an unique type of data. Examples: # Number
 # or Chars.
 
-# TODO (@gabvaztor) Check if file exist automatically
+# TODO (@gabvaztor) Check if file exist autom<atically
 load_dataset = True
 if load_dataset:
     path_to_load = setting_object.saved_dataset_path
@@ -148,11 +155,11 @@ else:
     """
     Creating Reader Features
     """
-    reader_features = tfr.ReaderFeatures(set_data_files = path_train_and_test_images,
-                                         number_of_classes = number_of_classes,
-                                         labels_set = labels_set,
-                                         is_unique_csv = is_an_unique_csv, known_data_type = known_data_type,
-                                         percentages_sets = percentages_sets)
+    reader_features = tfr.ReaderFeatures(set_data_files=path_train_and_test_images,
+                                         number_of_classes=number_of_classes,
+                                         labels_set=labels_set,
+                                         is_unique_csv=is_an_unique_csv, known_data_type=known_data_type,
+                                         percentages_sets=percentages_sets)
 
     """
     Creating Reader from ReaderFeatures
@@ -172,11 +179,11 @@ pt("x_test", x_test.shape)
 pt("y_test", y_test.shape)
 with tf.device('/gpu:0'):  # GPU
     models = models.TFModels(setting_object=setting_object, option_problem=options,
-                             input_data=x_train,test=x_test,
-                             input_labels=y_train,test_labels=y_test,
+                             input_data=x_train, test=x_test,
+                             input_labels=y_train, test_labels=y_test,
                              number_of_classes=number_of_classes, type=None,
                              validation=None, validation_labels=None)
-    #with tf.device('/cpu:0'):  # CPU
+    # with tf.device('/cpu:0'):  # CPU
 
     models.convolution_model_image()
 """
