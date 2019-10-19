@@ -8,6 +8,7 @@ from src.utils.Prints import pt
 import time
 import types
 import functools
+import inspect
 
 class DecoratorClass(object):
 
@@ -32,32 +33,50 @@ class DecoratorClass(object):
 
         return method_separator
 
-    def __decorate_all_in_module(self, modules, decorator):
+    def __decorate_all_in_module(self, modules, function_decorator):
         for module in modules:
             for name in dir(module):
                 try:
                     obj = getattr(module, name)
                     if isinstance(obj, types.FunctionType):
-                        setattr(module, name, decorator(obj))
+                        setattr(module, name, function_decorator(obj))
+                    """    
+                    elif isinstance(obj, type):  # Checking if is a class
+                        for name, method in inspect.getmembers(obj):
+                            if (not inspect.ismethod(method) and not inspect.isfunction(method))\
+                                    or inspect.isbuiltin(method):
+                                continue
+                            print("Decorating function %s" % name)
+                            setattr(obj, name, function_decorator(method))
+                    """
                 except Exception as e:
                     pass
 
+    def __decorator_for_class(self, cls):
+        for name, method in inspect.getmembers(cls):
+            if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
+                continue
+            print("Decorating function %s" % name)
+            setattr(cls, name, self.__global_decorator(method))
+        return cls
+
     @staticmethod
-    def __global_decorator():
+    def __global_decorator(timed_flag=False):
         def msg_decorator(function):
             @functools.wraps(function)
             def inner_dec(*args, **kwargs):
-                method_str = ""
-                start = time.time()
-                method_separator_end = ""
-                method_separator_start = ""
-                try:
-                    method_str = str(function)[10:-23]
-                    method_separator_start = DecoratorClass().__method_separator(method_name=method_str, step=1)
-                    method_separator_end = DecoratorClass().__method_separator(method_name=method_str, step=3)
-                    pt(method_separator_start)
-                except:
-                    pt(method_separator_start)
+                if timed_flag:
+                    method_str = ""
+                    start = time.time()
+                    method_separator_end = ""
+                    method_separator_start = ""
+                    try:
+                        method_str = str(function)[10:-23]
+                        method_separator_start = DecoratorClass().__method_separator(method_name=method_str, step=1)
+                        method_separator_end = DecoratorClass().__method_separator(method_name=method_str, step=3)
+                        pt(method_separator_start)
+                    except:
+                        pt(method_separator_start)
                 try:
                     return function(*args, DEBUG=DEBUG_MODE, **kwargs)
                 except TypeError:  # Function has not kwargs
@@ -66,13 +85,10 @@ class DecoratorClass(object):
                     except:
                         return function()
                 finally:
-                    """
-                    print("Running time method: \"" + str(method_str) + "\"",
-                          str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start)))))
-                    """
-                    end_str = "\"" + str(method_str) + "\"" + \
-                              str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start))))
-                    pt(method_separator_end + " " + end_str)
+                    if timed_flag:
+                        end_str = "\"" + str(method_str) + "\"" + \
+                                  str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start))))
+                        pt(method_separator_end + " " + end_str)
             inner_dec.__name__ = function.__name__
             inner_dec.__doc__ = function.__doc__
             return inner_dec
@@ -89,4 +105,4 @@ class DecoratorClass(object):
     def start_wrapper_decoration(self, modules):
         #if not isinstance(modules, list):
         #    modules = list(modules)
-        self.__decorate_all_in_module(modules=modules, decorator=self.__global_decorator())
+        self.__decorate_all_in_module(modules=modules, function_decorator=self.__global_decorator(timed_flag=False))

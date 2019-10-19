@@ -11,7 +11,7 @@ https://google.github.io/styleguide/pyguide.html
 
 """
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+#from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -103,7 +103,7 @@ INPUT_VALUE = ""
 CONSOLE_WORDS_OPTION = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
 LOGGER = Logger()
 
-class TFModels():
+class CCModels():
     """
     Long Docs ...
     """

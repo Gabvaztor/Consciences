@@ -35,3 +35,7 @@ class Projects:
         settings_path = "projects/" + PROBLEM_ID + "/SETTINGS.json"
         print("Getting settings json from: " + settings_path)
         return Settings(settings_path)
+
+    @staticmethod
+    def get_problem_id():
+        return PROBLEM_ID
