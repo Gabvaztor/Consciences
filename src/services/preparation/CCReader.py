@@ -155,15 +155,15 @@ class Reader(object):
 
         path_to_save = self.settings.saved_dataset_path
 
-        if type_problem == Dictionary.string_option_signals_images_problem:
+        if type_problem == Projects.signals_images_problem_id:
             # TODO(@gabvaztor) Change this to use new structure
             features = self.reader_features
             tf_search = Searcher(features=features, reader=self)
             tf_search.find_train_and_test_sets_from_path_signals()
             self.create_and_save_flag_sets(test=True)
-        elif type_problem == Dictionary.string_option_web_traffic_problem:
+        elif type_problem == Projects.web_traffic_problem_id:
             self.read_web_traffic_data_and_create_files(is_necessary_create_files=False)
-        elif type_problem == Dictionary.string_option_retinopathy_k_problem:
+        elif type_problem == Projects.retinopathy_k_problem_id:
             features = self.reader_features
             tf_search = Searcher(features=features, reader=self)
             tf_search.get_fullpath_and_execute_problem_operation(problem=type_problem)

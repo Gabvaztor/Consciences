@@ -26,7 +26,7 @@ https://google.github.io/styleguide/pyguide.html
 Notes:
     * This file use TensorFlow version >1.0.
 """
-import src.services.modeling.CCModels as models
+import src.services.modeling.CModels as models
 import tensorflow as tf
 import os
 

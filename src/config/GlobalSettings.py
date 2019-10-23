@@ -10,9 +10,12 @@ DEBUG_MODE = 1
 # With GLOBAL_DECORATOR > 0 will wrap global decorators to all functions.
 GLOBAL_DECORATOR = 1
 
+# Logger: Logger is activated by Configurator if None
+LOGGER = None
+
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+print("PROJECT_ROOT_PATH", PROJECT_ROOT_PATH)
 def modules_no_decorables():
     """
     Returns: list of all local variables that mean: paths, folders or filenames of python modules.

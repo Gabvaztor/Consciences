@@ -1,5 +1,5 @@
 from src.utils.SettingsObject import Settings
-from .GlobalSettings import PROBLEM_ID
+from .GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH
 
 class Projects:
     """
@@ -32,7 +32,7 @@ class Projects:
         Generate the path and create the Setting object from json configuration inside "src.projects" path.
         Returns: Setting object from "SETTINGS.json" of the current project id
         """
-        settings_path = "projects/" + PROBLEM_ID + "/SETTINGS.json"
+        settings_path = PROJECT_ROOT_PATH + "\\projects\\" + PROBLEM_ID + "\\SETTINGS.json"
         print("Getting settings json from: " + settings_path)
         return Settings(settings_path)
 

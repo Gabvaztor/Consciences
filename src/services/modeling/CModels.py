@@ -35,6 +35,8 @@ from src.utils.Constants import Constant
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
 from src.utils.Logger import Logger
+from src.config.Projects import Projects
+from src.config.GlobalDecorators import DecoratorClass
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
 
 ''' TensorFlow: https://www.tensorflow.org/
@@ -97,13 +99,15 @@ import gc
 
 import os
 
+
+""" GLOBAL VARIABLES"""
 global GLOBAL_FUNCTION
 global GLOBAL_METADATA
 INPUT_VALUE = ""
 CONSOLE_WORDS_OPTION = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
-LOGGER = Logger()
+from src.config.GlobalSettings import PROBLEM_ID
 
-class CCModels():
+class CModels():
     """
     Long Docs ...
     """
@@ -732,6 +736,12 @@ class CCModels():
             pt(Errors.error, e)
             traceback.print_exc()
             pass
+    def convolution_model_image_v2(self):
+        import importlib
+        package = "src.projects." + PROBLEM_ID + ".modeling"
+        module_name = ".Models"
+        models = importlib.import_module(name=module_name, package=package)
+        models.main(self)
 
     #@timed
     def convolution_model_image(self):
@@ -741,35 +751,34 @@ class CCModels():
         # Print actual configuration
         self.print_actual_configuration()
         # TODO Try python EVAL method to do multiple variable neurons
-        with tf.device('/cpu:0'):  # CPU
         #with tf.device('/gpu:0'):  # GPU
-            # Placeholders
-            x_input, y_labels, keep_probably = self.placeholders(args=None, kwargs=None)
-            # Reshape x placeholder into a specific tensor
-            x_reshape = tf.reshape(x_input, [-1, self.input_rows_numbers, self.input_columns_numbers, 1])
-            # Network structure
-            y_prediction = self.network_structure(x_reshape, args=None, keep_probably=keep_probably)
-            cross_entropy, train_step, correct_prediction, accuracy = self.model_evaluation(y_labels=y_labels,
-                                                                                            y_prediction=y_prediction)
-            # Session
-            sess = initialize_session(self.debug_level)
-            # Saver session
-            saver = tf.train.Saver()  # Saver
-            # Batching values and labels from input and labels (with batch size)
-            if not self.restore_to_predict:
-                # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
-                # train set.
-                self.update_batch(create_dataset_flag=False)
-                # To restore model
-                if self.restore_model:
-                    self.load_and_restore_model(sess)
-                # TODO (@gabvaztor) When problem requires cross validation with train and test, do it during training.
-                # Besides this, when test/validation set requires check its accuracy but its size is very long to save
-                # in memory, it has to update all files during training to get the exact precision.
-                with tf.device('/gpu:0'):  # GPU
-                    self.train_model(args=None, kwargs=locals())
-            else:
-                self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
+        # Placeholders
+        x_input, y_labels, keep_probably = self.placeholders(args=None, kwargs=None)
+        # Reshape x placeholder into a specific tensor
+        x_reshape = tf.reshape(x_input, [-1, self.input_rows_numbers, self.input_columns_numbers, 1])
+        # Network structure
+        y_prediction = self.network_structure(x_reshape, args=None, keep_probably=keep_probably)
+        cross_entropy, train_step, correct_prediction, accuracy = self.model_evaluation(y_labels=y_labels,
+                                                                                        y_prediction=y_prediction)
+        # Session
+        sess = initialize_session(self.debug_level)
+        # Saver session
+        saver = tf.train.Saver()  # Saver
+        # Batching values and labels from input and labels (with batch size)
+        if not self.restore_to_predict:
+            # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
+            # train set.
+            self.update_batch(create_dataset_flag=False)
+            # To restore model
+            if self.restore_model:
+                self.load_and_restore_model(sess)
+            # TODO (@gabvaztor) When problem requires cross validation with train and test, do it during training.
+            # Besides this, when test/validation set requires check its accuracy but its size is very long to save
+            # in memory, it has to update all files during training to get the exact precision.
+            with tf.device('/gpu:0'):  # GPU
+                self.train_model(args=None, kwargs=locals())
+        else:
+            self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
 
     def prediction(self, x_input, y_prediction, keep_probably, sess):
         try:
@@ -1327,6 +1336,7 @@ class CCModels():
         pt('input_size', self.input_size)
         pt('batch_size', self.batch_size)
 
+    @DecoratorClass.global_decorator(timed_flag=True)
     def update_batch(self, is_test=False, create_dataset_flag=False):
         if not is_test:
             self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
@@ -1574,14 +1584,15 @@ def process_input_unity_generic(x_input, y_label, options=None, is_test=False, t
     :param is_test: Sometimes you don't want to do some operation to test set.
     :return: x_input and y_label processed
     """
+
     if options:
         option = options[0]  # Option selected
-        if option == Dictionary.string_option_signals_images_problem:
+        if option == Projects.signals_images_problem_id:
             x_input = process_image_signals_problem(x_input, options[1], options[2],
                                                     options[3], is_test=is_test)
-        if option == Dictionary.string_option_german_prizes_problem:
+        if option == Projects.german_prizes_problem_id:
             x_input = process_german_prizes_csv(x_input, is_test=is_test)
-        if option == Dictionary.string_option_retinopathy_k_problem:
+        if option == Projects.retinopathy_k_problem_id:
             x_input = image_process_retinopathy(image=x_input, image_type=options[1], height=options[2],
                                                 width=options[3], is_test=is_test, to_save=to_save,
                                                 cv2_flag=False, debug_mode=False, to_predict=to_predict)

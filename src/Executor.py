@@ -44,19 +44,18 @@ It had been used the version: 0.98.1
 '''
 import os
 import sys
+import importlib
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
 import src.services.preparation.CCReader as tfr
-import src.services.modeling.CCModels as models
 from src.config.Projects import Projects
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
-
-import tensorflow as tf
-
+from src.config.GlobalSettings import PROBLEM_ID
+from src.services.modeling.CModels import CModels
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -95,19 +94,9 @@ Git Clone : https://github.com/tflearn/tflearn.git
 """
 To install pandas: pip3 install pandas
 """
-def x(**kwargs):
-    print("DEBUG")
-    print(kwargs["DEBUG"])
-
-class y:
-    def z(self, **kwargs):
-        print("DEBUGZ")
-        print(kwargs["DEBUG"])
 
 class Executor:
     def execute(self):
-        x()
-        y().z()
         core_process()
 
 def core_process():
@@ -191,15 +180,25 @@ def core_process():
     pt("y_train", y_train.shape)
     pt("x_test", x_test.shape)
     pt("y_test", y_test.shape)
-    with tf.device('/gpu:0'):  # GPU
-        ccmodels = models.CCModels(setting_object=setting_object, option_problem=options,
-                                 input_data=x_train, test=x_test,
-                                 input_labels=y_train, test_labels=y_test,
-                                 number_of_classes=number_of_classes, type=None,
-                                 validation=None, validation_labels=None)
-        # with tf.device('/cpu:0'):  # CPU
 
-        ccmodels.convolution_model_image()
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # ---- END READING DATA ----
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    PROBLEM_ID_PACKAGE = "src.projects." + PROBLEM_ID
+    MODELING_PACKAGE = PROBLEM_ID_PACKAGE + ".modeling"
+    MODULE_NAME = ".Models"
+    MODULE_CONFIG = ".Config"
+    models = importlib.import_module(name=MODULE_NAME, package=MODELING_PACKAGE)
+    config = importlib.import_module(name=MODULE_CONFIG, package=PROBLEM_ID_PACKAGE)
+
+    cmodels = CModels(setting_object=setting_object, option_problem=options,
+                      input_data=x_train, test=x_test,
+                      input_labels=y_train, test_labels=y_test,
+                      number_of_classes=number_of_classes, type=None,
+                      validation=None, validation_labels=None)
+    models.main(cmodels, config.call())
     """
     if __name__ == '__main__':
         import multiprocessing

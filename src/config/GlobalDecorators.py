@@ -57,11 +57,11 @@ class DecoratorClass(object):
             if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
                 continue
             print("Decorating function %s" % name)
-            setattr(cls, name, self.__global_decorator(method))
+            setattr(cls, name, self.global_decorator(method))
         return cls
 
     @staticmethod
-    def __global_decorator(timed_flag=False):
+    def global_decorator(timed_flag=False):
         def msg_decorator(function):
             @functools.wraps(function)
             def inner_dec(*args, **kwargs):
@@ -105,4 +105,4 @@ class DecoratorClass(object):
     def start_wrapper_decoration(self, modules):
         #if not isinstance(modules, list):
         #    modules = list(modules)
-        self.__decorate_all_in_module(modules=modules, function_decorator=self.__global_decorator(timed_flag=False))
+        self.__decorate_all_in_module(modules=modules, function_decorator=self.global_decorator(timed_flag=False))

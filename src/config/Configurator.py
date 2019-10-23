@@ -7,7 +7,8 @@ The function of this module is:
 import sys, os
 
 from .GlobalDecorators import DecoratorClass
-from .GlobalSettings import GLOBAL_DECORATOR, DEBUG_MODE, PROJECT_ROOT_PATH, MODULES_NO_DECORABLES
+from .GlobalSettings import GLOBAL_DECORATOR, DEBUG_MODE, PROJECT_ROOT_PATH, MODULES_NO_DECORABLES, LOGGER
+from src.utils.Logger import Logger
 from src.utils.Prints import pt
 
 class Configurator:
@@ -15,7 +16,8 @@ class Configurator:
     def __relative_imports_step_1(self):
         sys.path.append(os.path.dirname(__file__))
         sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-        sys.path.append('../../')
+        sys.path.append('..\\..\\')
+        pt("print(sys.path)",sys.path)
 
     def __wrap_decorators_step_2(self, modules=None):
         """
@@ -40,12 +42,13 @@ class Configurator:
             pt("GLOBAL_DECORATOR is: " + str(GLOBAL_DECORATOR))
 
             try:
-                pt("Modules to be wrapped with new functionality")
-                for i, module in enumerate(modules):
-                    pt([i, module])
+                if DEBUG_MODE == 2:  # Verbose
+                    pt("Modules to be wrapped with new functionality")
+                    for i, module in enumerate(modules):
+                        pt([i, module])
                 decorator_class = DecoratorClass()
-                #modules.append(Configurator.__module__)
-                #modules.append(decorator_class.__module__)
+                modules.append(Configurator.__module__)
+                modules.append(decorator_class.__module__)
                 decorator_class.start_wrapper_decoration(modules=modules)
                 pt("Global decorated finished successfully")
 
@@ -72,7 +75,13 @@ class Configurator:
                 is_not_decorable = True
         return is_not_decorable
 
+    def __activate_logger(self):
+        global LOGGER
+        LOGGER = Logger()
+        return LOGGER
+
     def run(self, modules=None):
         self.__relative_imports_step_1()
         success = self.__wrap_decorators_step_2(modules=modules)
+        self.__activate_logger()
         return success

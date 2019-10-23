@@ -30,6 +30,9 @@ Notes:
 from src.config.Configurator import Configurator
 from src.Executor import Executor
 
-if __name__ == "__main__":
+def run():
     if Configurator().run():
         Executor().execute()
+
+if __name__ == "__main__":
+    run()

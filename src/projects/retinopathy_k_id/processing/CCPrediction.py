@@ -28,7 +28,7 @@ Notes:
 """
 
 from src.utils.UtilsFunctions import *
-import src.services.modeling.CCModels as models
+import src.services.modeling.CModels as models
 from utils import SettingsObject
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
