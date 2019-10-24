@@ -54,7 +54,7 @@ import src.services.preparation.CCReader as tfr
 from src.config.Projects import Projects
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
-from src.config.GlobalSettings import PROBLEM_ID
+from src.config.GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH
 from src.services.modeling.CModels import CModels
 
 ''' TensorFlow: https://www.tensorflow.org/
@@ -94,6 +94,13 @@ Git Clone : https://github.com/tflearn/tflearn.git
 """
 To install pandas: pip3 install pandas
 """
+
+PROJECT_ID_PACKAGE = "src.projects." + PROBLEM_ID
+MODELING_PACKAGE = PROJECT_ID_PACKAGE + ".modeling"
+MODULE_NAME = ".Models"
+MODULE_CONFIG = ".Config"
+CMODEL = importlib.import_module(name=MODULE_NAME, package=MODELING_PACKAGE)
+CONFIG = importlib.import_module(name=MODULE_CONFIG, package=PROJECT_ID_PACKAGE)
 
 class Executor:
     def execute(self):
@@ -186,19 +193,14 @@ def core_process():
     # ---- END READING DATA ----
     # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
-    PROBLEM_ID_PACKAGE = "src.projects." + PROBLEM_ID
-    MODELING_PACKAGE = PROBLEM_ID_PACKAGE + ".modeling"
-    MODULE_NAME = ".Models"
-    MODULE_CONFIG = ".Config"
-    models = importlib.import_module(name=MODULE_NAME, package=MODELING_PACKAGE)
-    config = importlib.import_module(name=MODULE_CONFIG, package=PROBLEM_ID_PACKAGE)
+
 
     cmodels = CModels(setting_object=setting_object, option_problem=options,
                       input_data=x_train, test=x_test,
                       input_labels=y_train, test_labels=y_test,
                       number_of_classes=number_of_classes, type=None,
                       validation=None, validation_labels=None)
-    models.main(cmodels, config.call())
+    CMODEL.core(cmodels, CONFIG.call())
     """
     if __name__ == '__main__':
         import multiprocessing

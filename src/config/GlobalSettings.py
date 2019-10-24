@@ -5,7 +5,7 @@ PROBLEM_ID = "retinopathy_k_id"
 IS_PREDICTION = False
 
 # 0 = Production mode; 1 = Debug mode; 2 = Verbose mode
-DEBUG_MODE = 1
+DEBUG_MODE = 2
 
 # With GLOBAL_DECORATOR > 0 will wrap global decorators to all functions.
 GLOBAL_DECORATOR = 1
@@ -13,9 +13,14 @@ GLOBAL_DECORATOR = 1
 # Logger: Logger is activated by Configurator if None
 LOGGER = None
 
+# Root path directory
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print("PROJECT_ROOT_PATH", PROJECT_ROOT_PATH)
+
+# When the process start this wraps all functions with two dividers: one represents the beginning of the function and
+# the other one represents the end of the function.
+TIMED_FLAG_DECORATOR = False
+
 def modules_no_decorables():
     """
     Returns: list of all local variables that mean: paths, folders or filenames of python modules.
@@ -31,4 +36,10 @@ def modules_no_decorables():
 
     return list(locals().copy().values())
 
+def functions_no_decorables():
+    pt = "pt"
+    return list(locals().copy().values())
+
 MODULES_NO_DECORABLES = modules_no_decorables()
+
+FUNCTIONS_NO_DECORABLES = functions_no_decorables()

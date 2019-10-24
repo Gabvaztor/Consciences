@@ -8,6 +8,7 @@ class Config():
     dimensions = 3
     width = 1280
     height = 720
+    shape = [dimensions, width, height]
     # Convolution
     kernel_size = (20, 20)
     # Pooling

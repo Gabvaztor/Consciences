@@ -7,7 +7,7 @@ The function of this module is:
 import sys, os
 
 from .GlobalDecorators import DecoratorClass
-from .GlobalSettings import GLOBAL_DECORATOR, DEBUG_MODE, PROJECT_ROOT_PATH, MODULES_NO_DECORABLES, LOGGER
+from .GlobalSettings import *
 from src.utils.Logger import Logger
 from src.utils.Prints import pt
 
@@ -42,14 +42,15 @@ class Configurator:
             pt("GLOBAL_DECORATOR is: " + str(GLOBAL_DECORATOR))
 
             try:
-                if DEBUG_MODE == 2:  # Verbose
+                if DEBUG_MODE == 3:  # Full Verbose
                     pt("Modules to be wrapped with new functionality")
                     for i, module in enumerate(modules):
                         pt([i, module])
                 decorator_class = DecoratorClass()
-                modules.append(Configurator.__module__)
-                modules.append(decorator_class.__module__)
-                decorator_class.start_wrapper_decoration(modules=modules)
+                #modules.append(Configurator.__module__)
+                #modules.append(decorator_class.__module__)
+                decorator_class.start_wrapper_decoration(modules=modules, timed_flag=TIMED_FLAG_DECORATOR,
+                                                         exceptions_functions=FUNCTIONS_NO_DECORABLES)
                 pt("Global decorated finished successfully")
 
             except Exception as error:

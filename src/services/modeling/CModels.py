@@ -38,6 +38,7 @@ from src.utils.Logger import Logger
 from src.config.Projects import Projects
 from src.config.GlobalDecorators import DecoratorClass
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
+from src.utils.DataGenerator import DataGenerator
 
 ''' TensorFlow: https://www.tensorflow.org/
 To upgrade TensorFlow to last version:
@@ -113,7 +114,8 @@ class CModels():
     """
     # TODO (@gabvaztor) Docs
     def __init__(self, setting_object, option_problem, input_data=None, test=None, input_labels=None, test_labels=None,
-                 number_of_classes=None , type=None, validation=None, validation_labels=None, predict_flag=False):
+                 number_of_classes=None , type=None, validation=None, validation_labels=None, predict_flag=False,
+                 execute_background_process=False):
         # TODO (@gabvaztor) Show and save graphs during all training asking before
         # TODO (@gabvaztor) Run some operations in other python execution or multiprocessing
         # NOTE: IF YOU LOAD_MODEL_CONFIGURATION AND CHANGE SOME TENSORFLOW ATTRIBUTE AS NEURONS, THE TRAIN WILL START
@@ -146,7 +148,7 @@ class CModels():
         # ask to continues save model at first if there isn't a model to restore
         self._show_advanced_info = False  # Labels and logits info.
         self._show_images = False  # If True show images when show_info is True
-        self._save_model_configuration = True  # If True, then all attributes will be saved in a settings_object path.
+        self._save_model_configuration = False  # If True, then all attributes will be saved in a settings_object path.
         self._shuffle_data = False  # If True, then the train and validation data will be shuffled separately.
         self._generate_predictions = False  # If true, it tries to generate a prediction
         self._save_graphs_images = False  # If True, then save graphs images from statistical values. NOTE that this will
@@ -162,7 +164,7 @@ class CModels():
             self._trains = int(self.input_size / self.batch_size) + 1  # Total number of trains for epoch
         else:
             self._input_size = None  # Change if necessary
-            self._trains = None  # Total number of trains for epoch
+            self._trains = None  # Total number of trains per epoch
         if self.validation is not None:
             self._validation_size = validation.shape[0] # Change if necessary
         else:
@@ -226,7 +228,7 @@ class CModels():
             self._save_json_configuration(Constant.attributes_to_delete_configuration)
         # TODO (@gabvaztor) Explote this feature
         # Execute input function asynchronously to force_save or wait process
-        if not self.restore_to_predict:
+        if not self.restore_to_predict and execute_background_process:
             execute_asynchronous_thread(input_while)
 
     @property
@@ -847,6 +849,11 @@ class CModels():
         random.shuffle(c)
         self.inputs_processed, self.labels_processed = zip(*c)
 
+    def shuffle_dataset(self, x, y):
+        x, y = get_inputs_and_labels_shuffled(x, y)
+        return x, y
+
+
     def data_buffer_generic_class(self, inputs, inputs_labels, shuffle_data=False, batch_size=None, is_test=False,
                                   options=None, create_dataset_flag=False):
         """
@@ -1336,9 +1343,10 @@ class CModels():
         pt('input_size', self.input_size)
         pt('batch_size', self.batch_size)
 
-    @DecoratorClass.global_decorator(timed_flag=True)
+
     def update_batch(self, is_test=False, create_dataset_flag=False):
         if not is_test:
+            pt("Updating input batch...", str(self.index_buffer_data) + "/" + str(self.input_size))
             self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
                                                                                 inputs_labels=self.input_labels,
                                                                                 shuffle_data=self.shuffle_data,
@@ -1346,15 +1354,49 @@ class CModels():
                                                                                 is_test=False,
                                                                                 options=self.options,
                                                                                 create_dataset_flag=create_dataset_flag)
+            return self.input_batch, self.label_batch
         elif is_test:
-            x_test_feed, y_test_feed = self.data_buffer_generic_class(inputs=self.test,
+            pt("Creating test inputs...")
+            self.x_test, self.y_test = self.data_buffer_generic_class(inputs=self.test,
                                                                       inputs_labels=self.test_labels,
                                                                       shuffle_data=self.shuffle_data,
                                                                       batch_size=None,
                                                                       is_test=True,
                                                                       options=self.options,
                                                                       create_dataset_flag=create_dataset_flag)
-            return x_test_feed, y_test_feed
+            return self.x_test, self.y_test
+
+    @DecoratorClass.global_decorator(timed_flag=True)
+    def batch_generator(self, is_test=False):
+        """
+
+        Returns: a part of inputs and labels.
+
+        """
+        is_new_epoch_flag = False
+        for num_train in range(self.num_actual_trains, self.trains):
+            if is_new_epoch_flag:
+                self.index_buffer_data = 0  # When it starts new epoch, index of data will be 0 again. This does not
+                # happen when restore model
+                self.train_accuracy_sum = 0.  # Restart train_accuracy_sum for new epoch.
+                is_new_epoch_flag = False
+                self.num_actual_trains = 0
+                # Update batches values (because index_buffer_data restarted)
+                self.update_batch()
+            self.update_batch()
+            if num_train + 1 == self.trains:  # +1 because start in 0
+                self.num_epochs_count += 1
+                is_new_epoch_flag = True
+            # Update num_trains_count
+            self.num_trains_count += 1
+            self.num_actual_trains = num_train
+            if is_test:
+                yield [self.input_batch, self.label_batch]
+            else:
+                yield [self.x_test, self.y_test]
+
+    def batch_generator_v2(self, shape, is_test=False):
+        return DataGenerator(CMODELS=self, shape=shape, is_test=is_test)
 
     def train_model(self, *args, **kwargs):
 

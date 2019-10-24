@@ -4,6 +4,7 @@
 
 from .GlobalSettings import DEBUG_MODE
 from src.utils.Prints import pt
+from src.utils.Errors import Errors
 
 import time
 import types
@@ -61,17 +62,20 @@ class DecoratorClass(object):
         return cls
 
     @staticmethod
-    def global_decorator(timed_flag=False):
+    def global_decorator(timed_flag=False, exceptions_functions=None):
         def msg_decorator(function):
             @functools.wraps(function)
             def inner_dec(*args, **kwargs):
-                if timed_flag:
-                    method_str = ""
+                exception_function_flag = False
+                method_str = str(function)[10:-23] if function else ""
+
+                if exceptions_functions:
+                    exception_function_flag = True if method_str in exceptions_functions else False
+                if timed_flag and not exception_function_flag:
                     start = time.time()
                     method_separator_end = ""
                     method_separator_start = ""
                     try:
-                        method_str = str(function)[10:-23]
                         method_separator_start = DecoratorClass().__method_separator(method_name=method_str, step=1)
                         method_separator_end = DecoratorClass().__method_separator(method_name=method_str, step=3)
                         pt(method_separator_start)
@@ -79,13 +83,11 @@ class DecoratorClass(object):
                         pt(method_separator_start)
                 try:
                     return function(*args, DEBUG=DEBUG_MODE, **kwargs)
-                except TypeError:  # Function has not kwargs
-                    try:
+                except Exception as e:  # Function has not kwargs
+                    if Errors.got_unexpected_parameter_debug in str(e):
                         return function(*args, **kwargs)
-                    except:
-                        return function()
                 finally:
-                    if timed_flag:
+                    if timed_flag and not exception_function_flag:
                         end_str = "\"" + str(method_str) + "\"" + \
                                   str(time.strftime("%Hh%Mm%Ss", time.gmtime((time.time() - start))))
                         pt(method_separator_end + " " + end_str)
@@ -102,7 +104,7 @@ class DecoratorClass(object):
             return f(*args, **kwargs)
         return wrapper
 
-    def start_wrapper_decoration(self, modules):
-        #if not isinstance(modules, list):
-        #    modules = list(modules)
-        self.__decorate_all_in_module(modules=modules, function_decorator=self.global_decorator(timed_flag=False))
+    def start_wrapper_decoration(self, modules, timed_flag=False, exceptions_functions=None):
+        self.__decorate_all_in_module(modules=modules,
+                                      function_decorator=self.global_decorator(timed_flag=timed_flag,
+                                                            exceptions_functions=exceptions_functions))
