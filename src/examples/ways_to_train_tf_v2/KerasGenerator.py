@@ -58,35 +58,34 @@ def main():
     """ LAYERS """
     model = network_structure_v1()
     model.summary()
+    #train_model(model=model)
+    #evaluate_model(model=model)
+    # Training
+    """
+    model.fit(x=CMODEL.input_batch, y=CMODEL.label_batch,
+              batch_size=64, epochs=CMODEL.epoch_numbers,
+              use_multiprocessing=True)
+    """
+    training_generator = CMODEL.batch_generator_v2(shape=_.shape)
+    validation_generator = CMODEL.batch_generator_v2(shape=_.shape, is_test=True)
 
-    execute_model(model=model)
+    filepath_to_save = CMODEL.settings_object.model_path + "model" + "{epoch:04d}" + ".ckpt"
+    callbacks = [
+        tf.keras.callbacks.ModelCheckpoint(filepath=filepath_to_save,
+                                           verbose=1,
+                                           period=1),
+    ]
 
-def execute_model(model: tf.keras.Sequential):
-    # Print actual configuration
-    CMODEL.print_current_configuration(config=CONFIG)
 
-    # Batching values and labels from input and labels (with batch size)
-    if not CMODEL.restore_to_predict:
-        # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
-        # train set.
-        CMODEL.update_batch(create_dataset_flag=False)
-        # To restore model
-        if CMODEL.restore_model:
-            #self.load_and_restore_model_v2()
-            pass
-        # Besides this, when test/validation set requires check its accuracy but its size is very long to save
-        # in memory, it has to update all files during training to get the exact precision.
+    history = model.fit_generator(generator=training_generator,
+                                  validation_data=validation_generator,
+                                  epochs=CMODEL.epoch_numbers,
+                                  use_multiprocessing=True,
+                                  verbose=2,
+                                  callbacks=callbacks)
+    model.evaluate(CMODEL.x_test,  CMODEL.y_test, verbose=2)
 
-        #train_current_model(model=model)
-        CMODEL.train_current_model(model=model, config=CONFIG)
-    else:
-        #self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
-        pass
-
-def train_current_model(model: tf.keras.Sequential):
-    pass
-
-def train_model(model: tf.keras.Sequential):
+def train_model(model):
     """
     Args:
         model: current model
@@ -98,7 +97,7 @@ def train_model(model: tf.keras.Sequential):
               epochs=2)
     return model
 
-def evaluate_model(model: tf.keras.Sequential):
+def evaluate_model(model):
     """
 
     Args:

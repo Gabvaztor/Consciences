@@ -33,6 +33,7 @@ def modules_no_decorables():
     utils_folder = "\\utils\\"
     executor = "Executor.py"
     runner = "Runner.py"
+    asynchronous_threading = "Asynchronous"
 
     return list(locals().copy().values())
 

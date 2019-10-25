@@ -199,7 +199,8 @@ def core_process():
                       input_data=x_train, test=x_test,
                       input_labels=y_train, test_labels=y_test,
                       number_of_classes=number_of_classes, type=None,
-                      validation=None, validation_labels=None)
+                      validation=None, validation_labels=None,
+                      execute_background_process=True)
     CMODEL.core(cmodels, CONFIG.call())
     """
     if __name__ == '__main__':

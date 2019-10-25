@@ -1,4 +1,3 @@
-from src.utils.Dictionary import Dictionary
 
 def pt(title=None, text=None, same_line=False):
     """
@@ -16,10 +15,13 @@ def pt(title=None, text=None, same_line=False):
             else:
                 new_title += (str(element) + ", ")
         title = new_title
+
     if text is None:
-        text = title
+        text = str(title)
         title = ""
         #title = Dictionary.string_separator
+    elif not title and text:
+        text = str(text)
     elif title and text:
         title += ': '
     if same_line:
@@ -27,10 +29,13 @@ def pt(title=None, text=None, same_line=False):
     else:
         print(str(title) + " \n " + str(text))
 
-def show_percent_by_total(total, count_number):
-    same_line = False if total == count_number else True
-    pt("Total Size", total, same_line=same_line)
-    pt("Count number", count_number, same_line=same_line)
+def show_percent_by_total(total, count_number, same_line=False):
     progress = float(((count_number * 100) / total))
     progress = "{0:.3f}".format(progress)
-    pt("Progress percent", progress + "%", same_line=same_line)
+
+    to_print = "Total Size:" + str(total) + "\n" + "Count number: " + str(count_number) + "\n" + \
+               "Progress percent", progress + "%"
+    #pt("Total Size", total, same_line=same_line)
+    #pt("Count number", count_number, same_line=same_line)
+    #pt("Progress percent", progress + "%", same_line=same_line)
+    pt(to_print, same_line=True)

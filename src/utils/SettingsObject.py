@@ -108,6 +108,7 @@ class Settings():
     def __init__(self, path):
         self._path = path
         self._load_settings()
+        self.__str__()
     def __str__(self):
         to_print = "\n".join([self.string_train_path,
                               self.train_path,

@@ -4,7 +4,7 @@ import traceback
 import src.utils.UtilsFunctions as utils
 from src.utils.Prints import pt
 
-def object_to_json(object, attributes_to_delete=None):
+def object_to_json(object, attributes_to_delete=None, **kwargs):
     """
     Convert class to json with properties method.
     :param attributes_to_delete: String set with all attributes' names to delete from properties method

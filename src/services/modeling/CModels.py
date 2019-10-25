@@ -34,21 +34,14 @@ from src.utils.Errors import Errors
 from src.utils.Constants import Constant
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
+import src.utils.Prints as prints
 from src.utils.Logger import Logger
 from src.config.Projects import Projects
 from src.config.GlobalDecorators import DecoratorClass
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
-from src.utils.DataGenerator import DataGenerator
-
-''' TensorFlow: https://www.tensorflow.org/
-To upgrade TensorFlow to last version:
-*CPU: pip3 install --upgrade tensorflow
-*GPU: pip3 install --upgrade tensorflow-gpu
-'''
-import tensorflow as tf
 
 # noinspection PyUnresolvedReferences
-print("TensorFlow: " + tf.__version__)
+print("CModel Executed")
 
 ''' Numpy is an extension to the Python programming language, adding support for large,
 multi-dimensional arrays and matrices, along with a large library of high-level
@@ -100,7 +93,7 @@ import gc
 
 import os
 
-
+import tensorflow as tf
 """ GLOBAL VARIABLES"""
 global GLOBAL_FUNCTION
 global GLOBAL_METADATA
@@ -113,9 +106,9 @@ class CModels():
     Long Docs ...
     """
     # TODO (@gabvaztor) Docs
-    def __init__(self, setting_object, option_problem, input_data=None, test=None, input_labels=None, test_labels=None,
-                 number_of_classes=None , type=None, validation=None, validation_labels=None, predict_flag=False,
-                 execute_background_process=False):
+    def __init__(self, setting_object=None, option_problem=None, input_data=None, test=None, input_labels=None,
+                 test_labels=None, number_of_classes=None , type=None, validation=None, validation_labels=None,
+                 predict_flag=False, execute_background_process=False):
         # TODO (@gabvaztor) Show and save graphs during all training asking before
         # TODO (@gabvaztor) Run some operations in other python execution or multiprocessing
         # NOTE: IF YOU LOAD_MODEL_CONFIGURATION AND CHANGE SOME TENSORFLOW ATTRIBUTE AS NEURONS, THE TRAIN WILL START
@@ -137,7 +130,7 @@ class CModels():
         self._restore_model = False # Labels and logits info. Load only to continue training.
         self._restore_model_configuration = self.restore_model  # By defect, use restore_model value. This, load variables from configuration file.
         self._restore_to_predict = predict_flag  # Load pretrained model to do a prediction. Restrictive
-        self._save_model_information = True  # If must to save model or not
+        self._save_model_information = False  # If must to save model or not
         self._ask_to_save_model_information = False  # If True and 'save_model' is true, ask to save model each time
         # TODO (@gabvaztor) Create a flag variable with which you can change a variable value before load and, if
         # the value change, the changed value is priority
@@ -149,14 +142,14 @@ class CModels():
         self._show_advanced_info = False  # Labels and logits info.
         self._show_images = False  # If True show images when show_info is True
         self._save_model_configuration = False  # If True, then all attributes will be saved in a settings_object path.
-        self._shuffle_data = False  # If True, then the train and validation data will be shuffled separately.
+        self._shuffle_data = True  # If True, then the train and validation data will be shuffled separately.
         self._generate_predictions = False  # If true, it tries to generate a prediction
         self._save_graphs_images = False  # If True, then save graphs images from statistical values. NOTE that this will
         # decrease the performance during training. Although this is true or false, for each time an epoch has finished,
         # the framework will save a graph
         # TRAIN MODEL VARIABLES
-        self._input_rows_numbers = option_problem[2] # For example, in german problem, number of row pixels
-        self._input_columns_numbers = option_problem[3]  # For example, in german problem, number of column pixels
+        self._input_rows_numbers = option_problem[2] if option_problem else None  # For example, in german problem, number of row pixels
+        self._input_columns_numbers = option_problem[3] if option_problem else None  # For example, in german problem, number of column pixels
         self._epoch_numbers = 5  # Epochs number
         self._batch_size = 10  # Batch size
         if self.input is not None and not self.restore_to_predict:  # Change if necessary
@@ -184,7 +177,7 @@ class CModels():
         self._learning_rate = 1e-4  # Learning rate
         self._number_epoch_to_change_learning_rate = 60  #You can choose a number to change the learning rate. Number
         # represent the number of epochs before be changed.
-        self._print_information = 1  # How many trains are needed to print information
+        self._print_information = 200  # How many trains are needed to print information
         # INFORMATION VARIABLES
         self._index_buffer_data = 0  # The index for mini_batches during training. Start at zero.
         self._num_trains_count = 1  # Start at one
@@ -745,27 +738,10 @@ class CModels():
         models = importlib.import_module(name=module_name, package=package)
         models.main(self)
 
-    #@timed
-    def convolution_model_image(self):
-        """
-        Generic convolutional model
-        """
+    def execute_model_v2(self, model, config):
         # Print actual configuration
-        self.print_actual_configuration()
-        # TODO Try python EVAL method to do multiple variable neurons
-        #with tf.device('/gpu:0'):  # GPU
-        # Placeholders
-        x_input, y_labels, keep_probably = self.placeholders(args=None, kwargs=None)
-        # Reshape x placeholder into a specific tensor
-        x_reshape = tf.reshape(x_input, [-1, self.input_rows_numbers, self.input_columns_numbers, 1])
-        # Network structure
-        y_prediction = self.network_structure(x_reshape, args=None, keep_probably=keep_probably)
-        cross_entropy, train_step, correct_prediction, accuracy = self.model_evaluation(y_labels=y_labels,
-                                                                                        y_prediction=y_prediction)
-        # Session
-        sess = initialize_session(self.debug_level)
-        # Saver session
-        saver = tf.train.Saver()  # Saver
+        self.print_current_configuration(config=config)
+
         # Batching values and labels from input and labels (with batch size)
         if not self.restore_to_predict:
             # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
@@ -773,32 +749,173 @@ class CModels():
             self.update_batch(create_dataset_flag=False)
             # To restore model
             if self.restore_model:
-                self.load_and_restore_model(sess)
-            # TODO (@gabvaztor) When problem requires cross validation with train and test, do it during training.
+                #self.load_and_restore_model_v2()
+                pass
             # Besides this, when test/validation set requires check its accuracy but its size is very long to save
             # in memory, it has to update all files during training to get the exact precision.
-            with tf.device('/gpu:0'):  # GPU
-                self.train_model(args=None, kwargs=locals())
-        else:
-            self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
 
-    def prediction(self, x_input, y_prediction, keep_probably, sess):
-        try:
-            input_path = self.input[0]
-            label = 99
-            if self.input_labels is not None and self.input_labels:
-                label = self.input_labels[0]
-            x_input_pred, real_label = process_input_unity_generic(input_path, label, self.options, to_predict=True)
-            if label == 99:
-                real_label = None
-            else:
-                real_label = int(np.argmax(real_label))
-            saved_path = self.test_prediction(sess=sess, x_input_tensor=x_input, y_prediction=y_prediction,
-                                                  x_input_pred=x_input_pred, keep_probably=keep_probably,
-                                                  real_label=real_label, input_path=input_path)
-            pt("Prediction saved in", saved_path)
-        except Exception as err:
-            LOGGER.write_log_error(err)
+            self.train_current_model(model=model, config=config)
+        else:
+            #self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
+            pass
+
+    def train_current_model(self, model: tf.keras.Sequential, config, **kwargs):
+        """
+
+        Args:
+            model:
+            config:
+
+        Returns:
+
+        """
+        global INPUT_VALUE
+        #DEBUG_MODE = kwargs['DEBUG']
+
+        self.update_batch(is_test=True)
+
+        # TRAIN VARIABLES
+        start_time = time.time()  # Start time
+        actual_delta = self.delta_time  # Last delta time if exists
+        # TO STATISTICS
+        # To load accuracies and losses
+        accuracies_train, accuracies_test, loss_train, loss_test = utils.load_accuracies_and_losses(
+            self.settings_object.accuracies_losses_path, self.restore_model)
+
+        # Folders and file where information and configuration files will be saved.
+        filepath_save = None
+        # Update real self.num_actual_trains:
+        if self.index_buffer_data == 0:
+            self.num_actual_trains = 0
+        elif self.num_actual_trains == 0: # 1188
+            self.num_actual_trains = int(self.num_trains_count % self.trains)  # This case only can happen when
+        # you restore a model and num_actual_trains2 fails to load. Otherwise, num_actual_trains contains rigth value.
+        is_new_epoch_flag = False  # Represent if training come into a new epoch. With this, a graph will be saved each
+        # new epoch
+        # START  TRAINING
+        for epoch in range(self.num_epochs_count, self.epoch_numbers):  # Start with load value or 0
+            if is_new_epoch_flag:
+                self.index_buffer_data = 0  # When it starts new epoch, index of data will be 0 again. This does not
+                # happen when restore model
+                self.train_accuracy_sum = 0.  # Restart train_accuracy_sum for new epoch.
+                is_new_epoch_flag = False
+                self.num_actual_trains = 0
+                # Update batches values (because index_buffer_data restarted)
+                self.update_batch()
+            for num_train in range(self.num_actual_trains, self.trains):  # Start with load value or 0
+                # Setting values
+                model.train_on_batch(x=self.input_batch, y=self.label_batch)
+                # TODO(@gabvaztor) Add validation_accuracy to training when necessary
+                test_results = model.evaluate(self.x_test, self.y_test, verbose=0)
+                train_results = model.evaluate(self.input_batch, self.label_batch, verbose=0)
+
+                self.test_loss, self.test_accuracy = test_results, 0
+                self.train_loss, self.train_accuracy = train_results, 0
+                self.train_accuracy_sum += self.train_accuracy
+                # To generate statistics
+                accuracies_train.append(self.train_accuracy)
+                accuracies_test.append(self.test_accuracy)
+                loss_train.append(self.train_loss)
+                loss_test.append(self.test_loss)
+
+                with tf.device('/cpu:0'):
+                    numpy_arrays = [accuracies_train, accuracies_test, loss_train, loss_test]
+                    numpy_names = ["accuracies_train", "accuracies_test", "loss_train", "loss_test"]
+                    execute_asynchronous_thread(functions=utils.save_numpy_arrays_generic,
+                                                arguments=(self.settings_object.accuracies_losses_path, numpy_arrays,
+                                                           numpy_names),
+                                                kwargs=None)
+                #y_pre = y_prediction.eval(feed_dict_train_100)
+                #prediction_ = np.argmax(y_pre, axis=1)
+                #p = tf.argmax(y_prediction, axis=1).eval(feed_dict_train_100)
+
+
+                # Update time
+                delta = actual_delta + (time.time() - start_time)
+                self.delta_time = delta
+                # TODO (@gabvaztor) Each X time, do a backup and continue training.
+
+                # Update actual
+                if num_train % self.print_information == 0 or INPUT_VALUE != "" :
+                    #pt("y_pre", y_pre)
+                    #pt("y_pre_sum", y_pre.sum())
+                    #pt("prediction_", prediction_)
+                    #pt("p", p)
+                    pt("saves_information", self.saves_information)
+                    percent_advance = "{0:.3f}".format(float(num_train * 100 / self.trains))
+                    day = str(int(time.strftime("%d", time.gmtime(delta))) - 1)
+                    pt('Time', str(time.strftime(day + " Days - %Hh%Mm%Ss", time.gmtime(delta))))
+                    pt('TRAIN NUMBER: ' + str(self.num_trains_count) + ' | Percent Epoch ' +
+                       str(epoch) + ": " + percent_advance + '%' + " | Trains number of actual epoch: " + str(num_train))
+                    pt('train_accuracy', self.train_accuracy)
+                    pt('cross_entropy_train', self.train_loss)
+                    pt('test_accuracy', self.test_accuracy)
+                    pt('index_buffer_data', self.index_buffer_data)
+                    pt('Mean train accuracy (actual epoch)', self.train_accuracy_sum / num_train)
+                    pt('WORDS: ', str(CONSOLE_WORDS_OPTION))
+
+                # Update indexes
+                # Update num_epochs_counts
+                if num_train + 1 == self.trains:  # +1 because start in 0
+                    self.num_epochs_count += 1
+                    is_new_epoch_flag = True
+                # To decrement learning rate during training
+                if self.num_epochs_count % self.number_epoch_to_change_learning_rate == 0 \
+                        and self.num_epochs_count != 1 and self.index_buffer_data == 0:
+                    self.learning_rate = float(self.learning_rate / 10.)
+                #save_type = self.should_save(check_loss_train=True, if_is_equal=False)
+                save_type = 0
+                if (num_train % self.print_information == 0 or INPUT_VALUE != "SAVE") and \
+                        num_train >= self.print_information:
+                    save_type = 1
+                if save_type > 0:  # 0, not save | 1, train save | 2, force save
+                    filepath_save_ = self.save_actual_model(model, save_type=save_type)
+                    #fullpath_save = self.settings_object.model_path + "my_model.h5"
+                    #model.save(fullpath_save)
+                    pt("Model saved")
+                if self.show_advanced_info:
+                    #self.show_advanced_information(y_labels=y_labels, y_prediction=y_prediction,
+                    #                              feed_dict=feed_dict_train_100)
+                    pass
+                with tf.device('/cpu:0'):
+                    if (self.save_graphs_images and filepath_save) or (is_new_epoch_flag):
+                        if not filepath_save:
+                            filepath_save = self.settings_object.configuration_path
+                        self.show_save_statistics(accuracies_train=accuracies_train, accuracies_test=accuracies_test,
+                                                  loss_train=loss_train, loss_test=loss_test,
+                                                  folder_to_save=filepath_save, show_graphs=False,
+                                                  is_new_epoch_flag=is_new_epoch_flag)
+
+                # Update num_trains_count and yo
+                self.num_trains_count += 1
+                self.num_actual_trains = num_train
+                if self.save_model_configuration:
+                    # Save configuration
+                    self._save_json_configuration(Constant.attributes_to_delete_configuration, save_type=save_type)
+                if INPUT_VALUE == "STOP":
+                    pt("PAUSING Training...","")
+                    time.sleep(3)  # 3 Seconds to save configuration
+                    pt("Training PAUSED", "You can now stop process without problems.")
+                    exit()
+                    break
+                else:
+                    # Collect trash
+                    if self.num_trains_count % 100 == 0:
+                        gc.collect()
+                    # TODO (@gabvaztor) Check update batch when it is the last train of epoch
+                    # Update batches values
+                    self.update_batch()
+
+        pt('END TRAINING ')
+        # Actual epoch is epoch_number
+        self.actual_epoch = self.epoch_numbers
+        if self.save_model_configuration:
+            # Save configuration to that results
+            self._save_json_configuration(Constant.attributes_to_delete_configuration)
+        self.show_save_statistics(accuracies_train=accuracies_train, accuracies_test=accuracies_test,
+                                  loss_train=loss_train, loss_test=loss_test, folder_to_save=filepath_save)
+        self.make_predictions()
+
 
     def test_prediction(self, sess, x_input_tensor, y_prediction, x_input_pred, keep_probably, real_label=None,
                         input_path=None):
@@ -914,10 +1031,10 @@ class CModels():
         :return: if should save
         """
         # TODO (@gabvaztor) Save a temp file to continue training when X hours or input console
-        global input_value
+        global INPUT_VALUE
         should_save = 0
-        if input_value != "":
-            if input_value == "HELP":
+        if INPUT_VALUE != "":
+            if INPUT_VALUE == "HELP":
                 pt("WORDS", CONSOLE_WORDS_OPTION)
                 pt("STOP", "Stop current training")
                 pt("WAIT -t", "If you write WAIT, the training will be paused for 10 seconds. If you write a -t time "
@@ -927,12 +1044,12 @@ class CModels():
                    "With CODE you can write a python code (self.trains > 1000) and, if True, will "
                    "activate a variable that save the actual model")
                 pt("HELP", "Show this message for 10 seconds")
-                input_value = "WAIT"
-            if "WAIT" in input_value:
+                INPUT_VALUE = "WAIT"
+            if "WAIT" in INPUT_VALUE:
                 time_to_sleep = 10
-                if input_value != "WAIT":
+                if INPUT_VALUE != "WAIT":
                     try:
-                        time_to_sleep = int(input_value[6:])
+                        time_to_sleep = int(INPUT_VALUE[6:])
                         if time_to_sleep <= 0:  # Must be higher than 0
                             raise ()  # Provoke error
                     except Exception:
@@ -941,21 +1058,21 @@ class CModels():
                 pt("WAITING " + str(time_to_sleep) + " SECONDS...")
                 time.sleep(time_to_sleep)  # To sleep
                 pt("Continue Training...")
-            if input_value == "SAVE":
+            if INPUT_VALUE == "SAVE":
                 should_save = 2
                 # STOP training because, it is probably that index_buffer_data change value
-                input_value = "STOP"
-            if "CODE" in input_value:
+                INPUT_VALUE = "STOP"
+            if "CODE" in INPUT_VALUE:
                 try:
-                    condition = exec(input_value)
-                    pt(input_value)
+                    condition = exec(INPUT_VALUE)
+                    pt(INPUT_VALUE)
                     pt("Condition", condition)
                     if condition:
                         should_save = 1
                 except Exception:
                     pt("Bad line code as condition. Format: 'self.train_loss < 0.2'")
-            if input_value != "STOP":
-                input_value = ""
+            if INPUT_VALUE != "STOP":
+                INPUT_VALUE = ""
         save_for_information = True
         # TODO (@gabvaztor) Detect when stop learning. From 60% to 10% validation/test
         if self.saves_information:
@@ -1142,95 +1259,6 @@ class CModels():
                 pt(Errors.error, e)
                 raise Exception(Errors.error + " " + Errors.can_not_restore_model)
 
-    def placeholders(self, *args, **kwargs):
-        """
-        This method will contains all TensorFlow code about placeholders (variables which will be modified during
-        process)
-        :return: Inputs, labels and others placeholders
-        """
-        # Placeholders
-        #x = tf.compat.v1.placeholder(tf.float32, shape=[None, self.input_columns_after_reshape])  # All images will be 24*24 = 574
-        x = tf.placeholder(tf.float32, shape=[None, self.input_rows_numbers, self.input_columns_numbers, 3])  # All images will be 24*24 = 574
-        y_ = tf.placeholder(tf.float32, shape=[None, self.number_of_classes])  # Number of labels
-        keep_probably = tf.placeholder(tf.float32)  # Value of dropout. With this you can set a value for each data set
-        return x, y_, keep_probably
-
-    def network_structure(self, input, *args, **kwargs):
-        """
-        This method will contains all TensorFlow code about your network structure.
-        :param input: inputs
-        :return: The prediction (network output)
-        """
-        keep_dropout = kwargs['keep_probably']
-        # First Convolutional Layer
-        convolution_1 = tf.layers.conv2d(
-            inputs=input,
-            filters=self.first_label_neurons,
-            kernel_size=self.kernel_size,
-            padding="same")
-        # Pool Layer 1 and reshape images by 2
-        pool1 = tf.layers.max_pooling2d(inputs=convolution_1,
-                                        pool_size=[2, 2],
-                                        strides=2,
-                                        padding="same")
-        dropout1 = tf.nn.dropout(pool1, keep_dropout)
-        # Second Convolutional Layer
-        convolution_2 = tf.layers.conv2d(
-            inputs=dropout1,
-            filters=self.second_label_neurons,
-            kernel_size=self.kernel_size,
-            padding="same",
-            activation=tf.nn.relu)
-        # # Pool Layer 2 nd reshape images by 2
-        pool2 = tf.layers.max_pooling2d(inputs=convolution_2,
-                                        pool_size=[2, 2],
-                                        strides=2,
-                                        padding="same")
-        dropout2 = tf.nn.dropout(pool2, keep_dropout)
-
-        """
-        convolution_3 = tf.layers.conv2d(
-            inputs=dropout2,
-            filters=self.third_label_neurons,
-            kernel_size=self.kernel_size,
-            padding="same")
-
-        dropout3 = tf.nn.dropout(convolution_3, keep_dropout)
-        """
-        # Dense Layer
-        # TODO Checks max pools numbers
-        pool2_flat = tf.reshape(dropout2, [-1, int(int(self._input_rows_numbers / 1) * int(self._input_columns_numbers / 1) * 3)])
-        dense = tf.layers.dense(inputs=pool2_flat, units=self.fourth_label_neurons)
-        #dropout = tf.nn.dropout(dense, keep_dropout)
-        # Readout Layer
-        w_fc2 = weight_variable([self.fourth_label_neurons, self.number_of_classes])
-        b_fc2 = bias_variable([self.number_of_classes])
-        y_convolution = (tf.matmul(dense, w_fc2) + b_fc2)
-        return y_convolution
-
-    def model_evaluation(self, y_labels, y_prediction, *args, **kwargs):
-        """
-        This methods will contains all TensorFlow about model evaluation.
-        :param y_labels: Labels
-        :param y_prediction: The prediction
-        :return: The output must contains all necessaries variables that it used during training
-        """
-        # Evaluate model
-        cross_entropy = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_labels,
-                                                    logits=y_prediction))
-
-        #train_step = tf.train.AdadeltaOptimizer(self.learning_rate).minimize(cross_entropy)  # Adadelta Optimizer
-        train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(cross_entropy)  # Adam Optimizer
-        #train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(cross_entropy)  # Adam Optimizer
-
-        # Sure is axis = 1
-        correct_prediction = tf.equal(tf.argmax(y_prediction, axis=1),
-                                      tf.argmax(y_labels, axis=1))  # Get Number of right values in tensor
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))  # Get accuracy in float
-
-        return cross_entropy, train_step, correct_prediction, accuracy
-
     def show_advanced_information(self, y_labels, y_prediction, feed_dict):
         y__ = y_labels.eval(feed_dict)
         pt("y_pred", y__[0])
@@ -1248,18 +1276,21 @@ class CModels():
        #pt('index_buffer_data', self.index_buffer_data)
         #pt("SMAPE", smape(y__, y__prediction).eval(feed_dict))
 
-    def save_actual_model(self, saver, session, save_type):
+    def save_actual_model(self, model: tf.keras.Sequential, save_type):
         # Save variables to disk.
         if self.settings_object.model_path:
             try:
-                fullpath_save = self.settings_object.model_path + "model.ckpt"
+                fullpath_save = self.settings_object.model_path + "modelckpt_" + "my_model.h5"
+                pt("fullpath_save", fullpath_save)
                 if save_type == 2:  # Force save, temp save
                     fullpath_save = utils.get_temp_file_from_fullpath(fullpath_save)
                     pt("Saving TEMP model... DO NOT STOP PYTHON PROCESS")
                 else:
                     pt("Saving model... DO NOT STOP PYTHON PROCESS")
-                execute_asynchronous_thread(functions=saver.save,
-                                            arguments=(session, fullpath_save))
+                arguments = fullpath_save
+                #execute_asynchronous_thread(functions=model.save,
+                #                            arguments=arguments)
+                model.save(fullpath_save)
                 #saver.save(session, self.settings_object.model_path + Dictionary.string_ckpt_extension)
                 pt("Model saved without problem")
                 if self.show_when_save_information:
@@ -1332,7 +1363,7 @@ class CModels():
             if self.save_graphs_images or is_new_epoch_flag:
                 plt.savefig(complete_name)
 
-    def print_actual_configuration(self):
+    def print_current_configuration(self, config):
         """
         Print all attributes to console
         """
@@ -1346,7 +1377,9 @@ class CModels():
 
     def update_batch(self, is_test=False, create_dataset_flag=False):
         if not is_test:
-            pt("Updating input batch...", str(self.index_buffer_data) + "/" + str(self.input_size))
+            #pt("Updating input batch")
+            prints.show_percent_by_total(total=self.input_size, count_number=self.index_buffer_data)
+            #pt("Updating input batch", str(self.index_buffer_data) + "/" + str(self.input_size), same_line=False)
             self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
                                                                                 inputs_labels=self.input_labels,
                                                                                 shuffle_data=self.shuffle_data,
@@ -1396,11 +1429,12 @@ class CModels():
                 yield [self.x_test, self.y_test]
 
     def batch_generator_v2(self, shape, is_test=False):
+        from src.utils.DataGenerator import DataGenerator
         return DataGenerator(CMODELS=self, shape=shape, is_test=is_test)
 
     def train_model(self, *args, **kwargs):
 
-        global input_value
+        global INPUT_VALUE
         x = kwargs['kwargs']['x_input']
         y_labels = kwargs['kwargs']['y_labels']
         keep_probably = kwargs['kwargs']['keep_probably']
@@ -1484,7 +1518,7 @@ class CModels():
                 # TODO (@gabvaztor) Each X time, do a backup and continue training.
 
                 # Update actual
-                if num_train % self.print_information == 0 or input_value != "":
+                if num_train % self.print_information == 0 or INPUT_VALUE != "":
                     pt("y_pre", y_pre)
                     pt("y_pre_sum", y_pre.sum())
                     pt("prediction_", prediction_)
@@ -1532,7 +1566,7 @@ class CModels():
                 if self.save_model_configuration:
                     # Save configuration
                     self._save_json_configuration(Constant.attributes_to_delete_configuration, save_type=save_type)
-                if input_value == "STOP":
+                if INPUT_VALUE == "STOP":
                     pt("PAUSING Training...","")
                     time.sleep(3)  # 3 Seconds to save configuration
                     pt("Training PAUSED", "You can now stop process without problems.")
@@ -1758,6 +1792,6 @@ def call_method(method):
     method()
 
 def input_while():
-    global input_value
+    global INPUT_VALUE
     while True:
-        input_value = input()
+        INPUT_VALUE = input()

@@ -160,7 +160,7 @@ def preprocess_lists(lists, index_to_eliminate=2):
     return processed_lists
 
 
-def save_numpy_arrays_generic(folder_to_save, numpy_files, names=None):
+def save_numpy_arrays_generic(folder_to_save, numpy_files, names=None, **kwargs):
     """
     Save the accuracies and losses into a type_file folder.
     names and numpy_files are two list.
@@ -169,6 +169,7 @@ def save_numpy_arrays_generic(folder_to_save, numpy_files, names=None):
     :param names: Must have same size than numpy_files
 
     """
+    debug_mode = kwargs["DEBUG"] if "DEBUG" in kwargs else False
     # TODO (@gabvaztor) finish Docs
     folders.create_directory_from_fullpath(folder_to_save)
     for index in range(len(numpy_files)):
@@ -177,7 +178,8 @@ def save_numpy_arrays_generic(folder_to_save, numpy_files, names=None):
         else:
             name_file = Dictionary.filename_numpy_default
             np.save(folder_to_save + name_file + str(index + 1), numpy_files[index])
-    print("Files has been saved in numpy format")
+    if not debug_mode:
+        print("Files has been saved in numpy format")
 
 
 def load_numpy_arrays_generic(path_to_load, names):
