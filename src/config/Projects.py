@@ -33,9 +33,13 @@ class Projects:
         Returns: Setting object from "SETTINGS.json" of the current project id
         """
         settings_path = PROJECT_ROOT_PATH + "\\projects\\" + PROBLEM_ID + "\\SETTINGS.json"
-        print("Getting settings json from: " + settings_path)
-        return Settings(settings_path)
-
+        settings = None
+        try:
+            settings = Settings(settings_path)
+            print("Getting settings json from: " + settings_path)
+        except:
+            print("Could't load Settings object from: ", settings_path)
+        return settings
     @staticmethod
     def get_problem_id():
         return PROBLEM_ID

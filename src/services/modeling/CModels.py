@@ -150,8 +150,8 @@ class CModels():
         # TRAIN MODEL VARIABLES
         self._input_rows_numbers = option_problem[2] if option_problem else None  # For example, in german problem, number of row pixels
         self._input_columns_numbers = option_problem[3] if option_problem else None  # For example, in german problem, number of column pixels
-        self._epoch_numbers = 5  # Epochs number
-        self._batch_size = 10  # Batch size
+        self._epoch_numbers = 20  # Epochs number
+        self._batch_size = 15  # Batch size
         if self.input is not None and not self.restore_to_predict:  # Change if necessary
             self._input_size = self.input.shape[0]  # Change if necessary
             self._trains = int(self.input_size / self.batch_size) + 1  # Total number of trains for epoch
@@ -771,7 +771,7 @@ class CModels():
         """
         global INPUT_VALUE
         #DEBUG_MODE = kwargs['DEBUG']
-
+        self.update_batch(create_dataset_flag=False)
         self.update_batch(is_test=True)
 
         # TRAIN VARIABLES
@@ -811,6 +811,11 @@ class CModels():
 
                 self.test_loss, self.test_accuracy = test_results, 0
                 self.train_loss, self.train_accuracy = train_results, 0
+                # TODO (@gabvaztor) Get train and test accuracies
+
+                to_append = " || Train loss: " + str(self.train_loss) + " || Test loss: " + str(self.test_loss)
+                prints.show_percent_by_total(total=self.input_size, count_number=self.index_buffer_data,
+                                             to_append=to_append)
                 self.train_accuracy_sum += self.train_accuracy
                 # To generate statistics
                 accuracies_train.append(self.train_accuracy)
@@ -851,7 +856,7 @@ class CModels():
                     pt('cross_entropy_train', self.train_loss)
                     pt('test_accuracy', self.test_accuracy)
                     pt('index_buffer_data', self.index_buffer_data)
-                    pt('Mean train accuracy (actual epoch)', self.train_accuracy_sum / num_train)
+                    #pt('Mean train accuracy (actual epoch)', self.train_accuracy_sum / num_train)
                     pt('WORDS: ', str(CONSOLE_WORDS_OPTION))
 
                 # Update indexes
@@ -865,8 +870,7 @@ class CModels():
                     self.learning_rate = float(self.learning_rate / 10.)
                 #save_type = self.should_save(check_loss_train=True, if_is_equal=False)
                 save_type = 0
-                if (num_train % self.print_information == 0 or INPUT_VALUE != "SAVE") and \
-                        num_train >= self.print_information:
+                if (num_train % self.print_information == 0) and num_train >= self.print_information:
                     save_type = 1
                 if save_type > 0:  # 0, not save | 1, train save | 2, force save
                     filepath_save_ = self.save_actual_model(model, save_type=save_type)
@@ -877,6 +881,7 @@ class CModels():
                     #self.show_advanced_information(y_labels=y_labels, y_prediction=y_prediction,
                     #                              feed_dict=feed_dict_train_100)
                     pass
+                """
                 with tf.device('/cpu:0'):
                     if (self.save_graphs_images and filepath_save) or (is_new_epoch_flag):
                         if not filepath_save:
@@ -885,7 +890,7 @@ class CModels():
                                                   loss_train=loss_train, loss_test=loss_test,
                                                   folder_to_save=filepath_save, show_graphs=False,
                                                   is_new_epoch_flag=is_new_epoch_flag)
-
+                """
                 # Update num_trains_count and yo
                 self.num_trains_count += 1
                 self.num_actual_trains = num_train
@@ -1378,7 +1383,6 @@ class CModels():
     def update_batch(self, is_test=False, create_dataset_flag=False):
         if not is_test:
             #pt("Updating input batch")
-            prints.show_percent_by_total(total=self.input_size, count_number=self.index_buffer_data)
             #pt("Updating input batch", str(self.index_buffer_data) + "/" + str(self.input_size), same_line=False)
             self.input_batch, self.label_batch = self.data_buffer_generic_class(inputs=self.input,
                                                                                 inputs_labels=self.input_labels,
@@ -1432,167 +1436,52 @@ class CModels():
         from src.utils.DataGenerator import DataGenerator
         return DataGenerator(CMODELS=self, shape=shape, is_test=is_test)
 
-    def train_model(self, *args, **kwargs):
+    def make_predictions(self, model: tf.keras.Sequential):
+        start_time_load_model = datetime.datetime.now()
+        """
+        # Load model
+        fullpath_save = self.settings_object.model_path + "modelckpt_" + "my_model.h5"
+        model = tf.keras.models.load_model(fullpath_save)
+        delta = datetime.datetime.now() - start_time_load_model
+        pt("Time to load model ", delta.total_seconds())
+        """
+        pt(1)
+        self.update_batch(is_test=True)
+        pt(2)
+        start_datetime_ = datetime.datetime.now()
+        pt(3)
+        to_predict = self.x_test
+        pt(4)
+        pt("shape ", to_predict.shape)
+        # Use `convert_image_dtype` to convert to floats in the [0,1] range.
+        #to_predict = tf.image.convert_image_dtype(to_predict, tf.float32)
+        pt("shape2 ", to_predict.shape)
+        #to_predict = np.resize(to_predict, [720, 1280, 1])
+        pt("shape3 ", to_predict.shape)
+        try:
+            predictions = model.predict(x=to_predict/255.0, verbose=2, use_multiprocessing=True,
+                                        batch_size=15)
+            pt(str(predictions))
+        except Exception as e:
+            pt(Errors.error, e)
+        delta = datetime.datetime.now() - start_datetime_
+        pt("Time to do inference ", delta.total_seconds())
+        pt("predictions", predictions)
+        path_saved = None
+        information = self.options[0]
+        try:
+            prediction_class = prediction.ImagePrediction(information=information, real_label=real_label,
+                                                          image_fullpath=input_path,
+                                                          prediction_label=int(np.argmax(prediction)))
+            prediction_class.save_json(save_fullpath=self.settings_object.submission_path)
+        except Exception as e:
+            pt(Errors.error, e)
+            raise ValueError("Can not save prediction json")
 
-        global INPUT_VALUE
-        x = kwargs['kwargs']['x_input']
-        y_labels = kwargs['kwargs']['y_labels']
-        keep_probably = kwargs['kwargs']['keep_probably']
-        accuracy = kwargs['kwargs']['accuracy']
-        train_step = kwargs['kwargs']['train_step']
-        cross_entropy = kwargs['kwargs']['cross_entropy']
-        saver = kwargs['kwargs']['saver']
-        sess = kwargs['kwargs']['sess']
-        y_prediction = kwargs['kwargs']['y_prediction']
-
-        x_test_feed, y_test_feed = self.update_batch(is_test=True)
-
-        # TRAIN VARIABLES
-        start_time = time.time()  # Start time
-        actual_delta = self.delta_time  # Last delta time if exists
-        # TO STATISTICS
-        # To load accuracies and losses
-        accuracies_train, accuracies_test, loss_train, loss_test = utils.load_accuracies_and_losses(
-            self.settings_object.accuracies_losses_path, self.restore_model)
-
-        # Folders and file where information and configuration files will be saved.
-        filepath_save = None
-
-        # Update test feeds ( will be not modified during training)
-        feed_dict_test_100 = {x: x_test_feed, y_labels: y_test_feed, keep_probably: 1}
-        # Update real self.num_actual_trains:
-        if self.index_buffer_data == 0:
-            self.num_actual_trains = 0
-        elif self.num_actual_trains == 0: # 1188
-            self.num_actual_trains = int(self.num_trains_count % self.trains)  # This case only can happen when
-        # you restore a model and num_actual_trains2 fails to load. Otherwise, num_actual_trains contains rigth value.
-        is_new_epoch_flag = False  # Represent if training come into a new epoch. With this, a graph will be saved each
-        # new epoch
-        # START  TRAINING
-        for epoch in range(self.num_epochs_count, self.epoch_numbers):  # Start with load value or 0
-            if is_new_epoch_flag:
-                self.index_buffer_data = 0  # When it starts new epoch, index of data will be 0 again. This does not
-                # happen when restore model
-                self.train_accuracy_sum = 0.  # Restart train_accuracy_sum for new epoch.
-                is_new_epoch_flag = False
-                self.num_actual_trains = 0
-                # Update batches values (because index_buffer_data restarted)
-                self.update_batch()
-            for num_train in range(self.num_actual_trains, self.trains):  # Start with load value or 0
-                # Update feeds
-                feed_dict_train_100 = {x: self.input_batch, y_labels: self.label_batch, keep_probably: 1}
-                feed_dict_train_dropout = {x: self.input_batch, y_labels: self.label_batch,
-                                           keep_probably: self.train_dropout}
-
-                # Setting values
-                train_step.run(feed_dict_train_dropout)
-                # TODO(@gabvaztor) Add validation_accuracy to training when necessary
-                self.train_accuracy = accuracy.eval(feed_dict_train_100) * 100
-                self.test_accuracy = accuracy.eval(feed_dict_test_100) * 100
-                # Mandatory to save as numpy float64, not float32
-                self.train_loss = np.float64(cross_entropy.eval(feed_dict_train_100))
-                self.test_loss = np.float64(cross_entropy.eval(feed_dict_test_100))
-
-                self.train_accuracy_sum += self.train_accuracy
-                # To generate statistics
-                accuracies_train.append(self.train_accuracy)
-                accuracies_test.append(self.test_accuracy)
-                loss_train.append(self.train_loss)
-                loss_test.append(self.test_loss)
-
-                with tf.device('/cpu:0'):
-                    numpy_arrays = [accuracies_train, accuracies_test, loss_train, loss_test]
-                    numpy_names = ["accuracies_train", "accuracies_test", "loss_train", "loss_test"]
-                    execute_asynchronous_thread(functions=utils.save_numpy_arrays_generic,
-                                                arguments=(self.settings_object.accuracies_losses_path, numpy_arrays,
-                                                           numpy_names),
-                                                kwargs=None)
-                y_pre = y_prediction.eval(feed_dict_train_100)
-                prediction_ = np.argmax(y_pre, axis=1)
-                p = tf.argmax(y_prediction, axis=1).eval(feed_dict_train_100)
-
-
-                # Update time
-                delta = actual_delta + (time.time() - start_time)
-                self.delta_time = delta
-                # TODO (@gabvaztor) Each X time, do a backup and continue training.
-
-                # Update actual
-                if num_train % self.print_information == 0 or INPUT_VALUE != "":
-                    pt("y_pre", y_pre)
-                    pt("y_pre_sum", y_pre.sum())
-                    pt("prediction_", prediction_)
-                    pt("p", p)
-                    pt("saves_information", self.saves_information)
-                    percent_advance = "{0:.3f}".format(float(num_train * 100 / self.trains))
-                    day = str(int(time.strftime("%d", time.gmtime(delta))) - 1)
-                    pt('Time', str(time.strftime(day + " Days - %Hh%Mm%Ss", time.gmtime(delta))))
-                    pt('TRAIN NUMBER: ' + str(self.num_trains_count) + ' | Percent Epoch ' +
-                       str(epoch) + ": " + percent_advance + '%' + " | Trains number of actual epoch: " + str(num_train))
-                    pt('train_accuracy', self.train_accuracy)
-                    pt('cross_entropy_train', self.train_loss)
-                    pt('test_accuracy', self.test_accuracy)
-                    pt('index_buffer_data', self.index_buffer_data)
-                    pt('Mean train accuracy (actual epoch)', self.train_accuracy_sum / num_train)
-                    pt('WORDS: ', str(CONSOLE_WORDS_OPTION))
-
-                # Update indexes
-                # Update num_epochs_counts
-                if num_train + 1 == self.trains:  # +1 because start in 0
-                    self.num_epochs_count += 1
-                    is_new_epoch_flag = True
-                # To decrement learning rate during training
-                if self.num_epochs_count % self.number_epoch_to_change_learning_rate == 0 \
-                        and self.num_epochs_count != 1 and self.index_buffer_data == 0:
-                    self.learning_rate = float(self.learning_rate / 10.)
-                save_type = self.should_save(check_loss_train=True, if_is_equal=False)
-                if save_type > 0:  # 0, not save | 1, train save | 2, force save
-                    filepath_save = self.save_actual_model(saver=saver, session=sess, save_type=save_type)
-                if self.show_advanced_info:
-                    self.show_advanced_information(y_labels=y_labels, y_prediction=y_prediction,
-                                                   feed_dict=feed_dict_train_100)
-                with tf.device('/cpu:0'):
-                    if (self.save_graphs_images and filepath_save) or (is_new_epoch_flag):
-                        if not filepath_save:
-                            filepath_save = self.settings_object.configuration_path
-                        self.show_save_statistics(accuracies_train=accuracies_train, accuracies_test=accuracies_test,
-                                                  loss_train=loss_train, loss_test=loss_test,
-                                                  folder_to_save=filepath_save, show_graphs=False,
-                                                  is_new_epoch_flag=is_new_epoch_flag)
-
-                # Update num_trains_count and yo
-                self.num_trains_count += 1
-                self.num_actual_trains = num_train
-                if self.save_model_configuration:
-                    # Save configuration
-                    self._save_json_configuration(Constant.attributes_to_delete_configuration, save_type=save_type)
-                if INPUT_VALUE == "STOP":
-                    pt("PAUSING Training...","")
-                    time.sleep(3)  # 3 Seconds to save configuration
-                    pt("Training PAUSED", "You can now stop process without problems.")
-                    exit()
-                    break
-                else:
-                    # Collect trash
-                    if self.num_trains_count % 100 == 0:
-                        gc.collect()
-                    # TODO (@gabvaztor) Check update batch when it is the last train of epoch
-                    # Update batches values
-                    self.update_batch()
-
-        pt('END TRAINING ')
-        # Actual epoch is epoch_number
-        self.actual_epoch = self.epoch_numbers
-        if self.save_model_configuration:
-            # Save configuration to that results
-            self._save_json_configuration(Constant.attributes_to_delete_configuration)
-        self.show_save_statistics(accuracies_train=accuracies_train, accuracies_test=accuracies_test,
-                                  loss_train=loss_train, loss_test=loss_test, folder_to_save=filepath_save)
-        self.make_predictions()
-
-    def make_predictions(self):
+        return path_saved
         # TODO (@gabvaztor) Finish method
-        pass
+
+
 
 """
 STATIC METHODS: Not need "self" :argument
@@ -1646,7 +1535,7 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
                 folders.create_directory_from_fullpath(fullpath=fullpath_to_save)
                 PIL.Image.fromarray(image).save(fullpath_to_save + ".jpeg")
         else:
-            image = np.asarray(image)
+            image = np.asarray(image)/255.0
         return image
 
 

@@ -29,10 +29,29 @@ Notes:
 
 from src.config.Configurator import Configurator
 from src.Executor import Executor
+from src.config.GlobalSettings import IS_PREDICTION
 
-def run():
-    if Configurator().run():
-        Executor().execute()
+def run(user_id=None, model_selected=None):
+    if user_id and model_selected:
+        Executor(user_id=user_id, model_selected=model_selected).execute()
+    else:
+        if Configurator().run():
+            Executor().execute()
 
 if __name__ == "__main__":
-    run()
+    if IS_PREDICTION:
+        run(user_id="Test")
+    else:
+        run()
+else:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--userID", required=False,
+                    help="userID")
+    ap.add_argument("-m", "--userModelSelection", required=False,
+                    help="userModelSelection")
+    args = vars(ap.parse_args())
+    USER_ID = args["userID"] if "userID" in args else None
+    MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else None
+
+    run(user_id=USER_ID)  # This means it is a new client petition from PHP.

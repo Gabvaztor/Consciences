@@ -2,7 +2,13 @@
 PROBLEM_ID = "retinopathy_k_id"
 
 # Set True if you are not training.
-IS_PREDICTION = False
+IS_PREDICTION = True
+
+# Set True if you want to execute the API mode
+API_MODE = False
+
+# Set True if you want to execute the UI
+IU_MODE = 0
 
 # 0 = Production mode; 1 = Debug mode; 2 = Verbose mode
 DEBUG_MODE = 2
@@ -10,16 +16,16 @@ DEBUG_MODE = 2
 # With GLOBAL_DECORATOR > 0 will wrap global decorators to all functions.
 GLOBAL_DECORATOR = 1
 
+# When the process start this wraps all functions with two dividers: one represents the beginning of the function and
+# the other one represents the end of the function.
+TIMED_FLAG_DECORATOR = False
+
 # Logger: Logger is activated by Configurator if None
 LOGGER = None
 
 # Root path directory
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# When the process start this wraps all functions with two dividers: one represents the beginning of the function and
-# the other one represents the end of the function.
-TIMED_FLAG_DECORATOR = False
 
 def modules_no_decorables():
     """

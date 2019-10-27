@@ -32,19 +32,20 @@ import os
 
 from src.config.Projects import Projects
 from src.utils import SettingsObject
+from src.services.api.API import AnswerConfiguration
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
-""" To get via parameter"""
-import argparse
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image_fullpath", required=False,
-                help="Image FullPath to predict")
-ap.add_argument("-l", "--image_label_real", required=False,
-                help="Image Real Label")
+class CPrediction:
+    def __init__(self, answer_configuration: AnswerConfiguration):
+        self.answer_configuration = answer_configuration
 
-args = vars(ap.parse_args())
+    def execute(self):
+        self.answer_configuration.model_selected
+
+
+
 image_fullpath_to_predict = args["image_fullpath"]
 image_label_real = args["image_label_real"]
 input_data = []
@@ -62,7 +63,7 @@ options = [option_problem, 1, 720, 1280]
 number_of_classes = 5 # Start in 0
 
 
-models = models.CCModels(setting_object=setting_object, option_problem=options,
+models = models.CModels(setting_object=setting_object, option_problem=options,
                          input_data=input_data,test=None,
                          input_labels=input_labels,test_labels=None,
                          number_of_classes=number_of_classes, type=None,

@@ -29,13 +29,13 @@ def pt(title=None, text=None, same_line=False):
     else:
         print(str(title) + " \n " + str(text))
 
-def show_percent_by_total(total, count_number, same_line=False):
+def show_percent_by_total(total, count_number, to_append="", same_line=False):
     progress = float(((count_number * 100) / total))
     progress = "{0:.3f}".format(progress)
-
-    to_print = "Total Size:" + str(total) + "\n" + "Count number: " + str(count_number) + "\n" + \
+    to_print = "Total Size:" + str(total) + " || " + "Count number: " + str(count_number) + " || " + \
                "Progress percent", progress + "%"
+    to_print += (to_append,)
     #pt("Total Size", total, same_line=same_line)
     #pt("Count number", count_number, same_line=same_line)
     #pt("Progress percent", progress + "%", same_line=same_line)
-    pt(to_print, same_line=True)
+    pt(to_print, same_line=same_line)

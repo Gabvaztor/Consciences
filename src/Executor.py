@@ -54,7 +54,7 @@ import src.services.preparation.CCReader as tfr
 from src.config.Projects import Projects
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
-from src.config.GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH
+from src.config.GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH, IS_PREDICTION
 from src.services.modeling.CModels import CModels
 
 ''' TensorFlow: https://www.tensorflow.org/
@@ -99,14 +99,45 @@ PROJECT_ID_PACKAGE = "src.projects." + PROBLEM_ID
 MODELING_PACKAGE = PROJECT_ID_PACKAGE + ".modeling"
 MODULE_NAME = ".Models"
 MODULE_CONFIG = ".Config"
-CMODEL = importlib.import_module(name=MODULE_NAME, package=MODELING_PACKAGE)
-CONFIG = importlib.import_module(name=MODULE_CONFIG, package=PROJECT_ID_PACKAGE)
+SETTING_OBJECT = Projects.get_settings()
 
 class Executor:
-    def execute(self):
-        core_process()
 
-def core_process():
+    def __init__(self, user_id=None, model_selected=None):
+        self.user_id = user_id
+        self.model_selected = model_selected
+
+    def execute(self):
+        if self.user_id and self.model_selected:  # If is not None, it is a Petition
+            _api_process(user_id=self.user_id, model_selected=self.model_selected,
+                         petition_process_in_background=True)
+        else:
+
+            _core_process()
+
+def _api_process(user_id: str, model_selected: str, petition_process_in_background=True):
+    """
+    Execute api process in background (optional)
+    Args:
+        user_id: user id sent from PHP server/client
+        petition_process_in_background: If the process will be executed in the background
+    """
+    if petition_process_in_background:
+        import subprocess
+        import src.services.api.API as api
+
+        try:  # Getting fullpath from api module
+            filepath = PROJECT_ROOT_PATH + str(api.__file__)
+            pt("filepath", filepath)
+            bat_path = "Z:\\Data_Science\\Projects\\Framework_API_Consciences\\src\\AIModels_FW_main.bat"
+            python_path = 'python "Z:\Data_Science\Projects\Framework_API_Consciences\src\MainLoop.py"' + " -i " + user_id
+            python_path = 'python ' + filepath + " -i " + user_id + " -m " + model_selected
+            #p = subprocess.Popen(bat_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            subprocess.Popen(python_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        except:
+            pass
+
+def _core_process():
 
     # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
@@ -135,10 +166,9 @@ def core_process():
     """
     Creating Reader Features
     """
-    option_problem = Projects.retinopathy_k_problem_id
-    setting_object = Projects.get_settings()
-    options = [option_problem, 1, 720, 1280]
-    path_train_and_test_images = [setting_object.train_path, setting_object.test_path]
+    OPTION_PROBLEM = Projects.retinopathy_k_problem_id
+    options = [OPTION_PROBLEM, 1, 720, 1280]
+    path_train_and_test_images = [SETTING_OBJECT.train_path, SETTING_OBJECT.test_path]
     number_of_classes = 5  # Start in 0
     percentages_sets = None  # Example
     labels_set = [Dictionary.string_labels_type_option_hierarchy]
@@ -150,7 +180,7 @@ def core_process():
     # TODO (@gabvaztor) Check if file exist autom<atically
     load_dataset = True
     if load_dataset:
-        path_to_load = setting_object.saved_dataset_path
+        path_to_load = SETTING_OBJECT.saved_dataset_path
         x_train_string = "x_train.npy"
         y_train_string = "y_train.npy"
         x_test_string = "x_test.npy"
@@ -175,8 +205,8 @@ def core_process():
         Creating Reader from ReaderFeatures
         """
 
-        tf_reader = tfr.Reader(type_problem=option_problem, reader_features=reader_features,
-                               settings=setting_object)  # Reader Object with all information
+        tf_reader = tfr.Reader(type_problem=OPTION_PROBLEM, reader_features=reader_features,
+                               settings=SETTING_OBJECT)  # Reader Object with all information
 
         x_train = tf_reader.x_train
         y_train = tf_reader.y_train
@@ -194,13 +224,14 @@ def core_process():
     # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
 
-
-    cmodels = CModels(setting_object=setting_object, option_problem=options,
+    CMODEL = importlib.import_module(name=MODULE_NAME, package=MODELING_PACKAGE)
+    CONFIG = importlib.import_module(name=MODULE_CONFIG, package=PROJECT_ID_PACKAGE)
+    cmodels = CModels(setting_object=SETTING_OBJECT, option_problem=options,
                       input_data=x_train, test=x_test,
                       input_labels=y_train, test_labels=y_test,
                       number_of_classes=number_of_classes, type=None,
                       validation=None, validation_labels=None,
-                      execute_background_process=True)
+                      execute_background_process=True, predict_flag=IS_PREDICTION)
     CMODEL.core(cmodels, CONFIG.call())
     """
     if __name__ == '__main__':

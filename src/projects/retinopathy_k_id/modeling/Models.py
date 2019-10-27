@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras.layers as layers
+import datetime
 
 from src.services.modeling.CModels import CModels
 from ..Config import Config
@@ -36,11 +37,11 @@ if __name__ == "__main__":
     import Runner
     Runner.run()
 
-def main():
+def main(**kwargs):
     """
 
     Args:
-        model_class: CCModel class
+        model_class: CModel class
         config: Config class
     """
     from tensorflow.python.client import device_lib
@@ -58,18 +59,16 @@ def main():
     """ LAYERS """
     model = network_structure_v1()
     model.summary()
-
     execute_model(model=model)
 
-def execute_model(model: tf.keras.Sequential):
+def execute_model(model: tf.keras.Sequential, **kwargs):
     # Print actual configuration
     CMODEL.print_current_configuration(config=CONFIG)
 
     # Batching values and labels from input and labels (with batch size)
-    if not CMODEL.restore_to_predict:
+
         # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
         # train set.
-        CMODEL.update_batch(create_dataset_flag=False)
         # To restore model
         if CMODEL.restore_model:
             #self.load_and_restore_model_v2()
@@ -79,9 +78,20 @@ def execute_model(model: tf.keras.Sequential):
 
         #train_current_model(model=model)
         CMODEL.train_current_model(model=model, config=CONFIG)
-    else:
-        #self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
-        pass
+
+
+def load_and_predict_image(fullpath_image):
+
+    #self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
+    start_time_load_model = datetime.datetime.now()
+    # Load model
+    fullpath_save = CMODEL.settings_object.model_path + "modelckpt_" + "my_model.h5"
+    model = tf.keras.models.load_model(fullpath_save)
+    delta = datetime.datetime.now() - start_time_load_model
+    pt("Time to load model ", delta.total_seconds())
+    # TODO (@gabvaztor) Finish
+    CMODEL.make_predictions(model=model)
+
 
 def train_current_model(model: tf.keras.Sequential):
     pass
