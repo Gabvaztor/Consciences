@@ -1,5 +1,5 @@
+import src.config.GlobalSettings as GS
 from src.utils.SettingsObject import Settings
-from .GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH
 
 class Projects:
     """
@@ -27,19 +27,40 @@ class Projects:
     retinopathy_k_problem_id = "retinopathy_k_id"
 
     @staticmethod
-    def get_settings():
+    def get_settings() -> Settings:
         """
         Generate the path and create the Setting object from json configuration inside "src.projects" path.
         Returns: Setting object from "SETTINGS.json" of the current project id
         """
-        settings_path = PROJECT_ROOT_PATH + "\\projects\\" + PROBLEM_ID + "\\SETTINGS.json"
-        settings = None
+        settings_path = GS.PROJECT_ROOT_PATH + "\\projects\\" + GS.PROBLEM_ID + "\\SETTINGS.json"
         try:
             settings = Settings(settings_path)
             print("Getting settings json from: " + settings_path)
         except:
+            settings = Settings()
             print("Could't load Settings object from: ", settings_path)
         return settings
+
+    @staticmethod
+    def _update_project_configuration(new_project_id=None):
+        """
+        Update current project configuration
+        """
+        if new_project_id:
+            GS.PROBLEM_ID = new_project_id
+
+    @staticmethod
+    def get_problem_config():
+        """
+        Problem_ID must be updated previously in GlobalSettings (normally in Executor step)
+        Returns: Current Config class
+        """
+        import importlib
+        MODULE_CONFIG = ".Config"
+        PROJECT_ID_PACKAGE = "src.projects." + GS.PROBLEM_ID
+        CONFIG = importlib.import_module(name=MODULE_CONFIG, package=PROJECT_ID_PACKAGE)
+        return CONFIG.call()
+
     @staticmethod
     def get_problem_id():
-        return PROBLEM_ID
+        return GS.PROBLEM_ID

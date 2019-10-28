@@ -16,18 +16,24 @@ DEBUG_MODE = 2
 # With GLOBAL_DECORATOR > 0 will wrap global decorators to all functions.
 GLOBAL_DECORATOR = 1
 
+# Set True or false if you want to use GPU
+GPU_TO_TRAIN = True
+GPU_TO_PREDICT = False
+
 # When the process start this wraps all functions with two dividers: one represents the beginning of the function and
 # the other one represents the end of the function.
 TIMED_FLAG_DECORATOR = False
-
-# Logger: Logger is activated by Configurator if None
-LOGGER = None
 
 # Root path directory
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-def modules_no_decorables():
+# Logger: Logger is activated by Configurator if None
+LOGGER = None
+
+LOGGER_PATH = PROJECT_ROOT_PATH + "\\logs\\"  # ...\ProjectName\src\logs\
+
+def __modules_no_decorables():
     """
     Returns: list of all local variables that mean: paths, folders or filenames of python modules.
     This will be used in the "Configurator" to avoid them when is time of wrap decorators
@@ -43,10 +49,10 @@ def modules_no_decorables():
 
     return list(locals().copy().values())
 
-def functions_no_decorables():
+def __functions_no_decorables():
     pt = "pt"
     return list(locals().copy().values())
 
-MODULES_NO_DECORABLES = modules_no_decorables()
+MODULES_NO_DECORABLES = __modules_no_decorables()
 
-FUNCTIONS_NO_DECORABLES = functions_no_decorables()
+FUNCTIONS_NO_DECORABLES = __functions_no_decorables()

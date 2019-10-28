@@ -105,10 +105,11 @@ class Settings():
     @saved_dataset_path.setter
     def saved_dataset_path(self, value): self._saved_dataset_path=value
 
-    def __init__(self, path):
-        self._path = path
-        self._load_settings()
-        self.__str__()
+    def __init__(self, path=None):
+        if path:
+            self._path = path
+            self._load_settings()
+            self.__str__()
     def __str__(self):
         to_print = "\n".join([self.string_train_path,
                               self.train_path,

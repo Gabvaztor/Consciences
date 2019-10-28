@@ -54,7 +54,7 @@ import src.services.preparation.CCReader as tfr
 from src.config.Projects import Projects
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
-from src.config.GlobalSettings import PROBLEM_ID, PROJECT_ROOT_PATH, IS_PREDICTION
+import src.config.GlobalSettings as GS
 from src.services.modeling.CModels import CModels
 
 ''' TensorFlow: https://www.tensorflow.org/
@@ -95,11 +95,22 @@ Git Clone : https://github.com/tflearn/tflearn.git
 To install pandas: pip3 install pandas
 """
 
-PROJECT_ID_PACKAGE = "src.projects." + PROBLEM_ID
+PROJECT_ID_PACKAGE = "src.projects." + GS.PROBLEM_ID
 MODELING_PACKAGE = PROJECT_ID_PACKAGE + ".modeling"
 MODULE_NAME = ".Models"
 MODULE_CONFIG = ".Config"
 SETTING_OBJECT = Projects.get_settings()
+
+def _update_project_configuration(new_project_id=None):
+    """
+    Update current project configuration
+    """
+    global PROJECT_ID_PACKAGE, MODELING_PACKAGE, MODULE_NAME, SETTING_OBJECT
+    if new_project_id:
+        GS.PROBLEM_ID = new_project_id
+    PROJECT_ID_PACKAGE = "src.projects." + GS.PROBLEM_ID
+    MODELING_PACKAGE = PROJECT_ID_PACKAGE + ".modeling"
+    SETTING_OBJECT = Projects.get_settings()
 
 class Executor:
 
@@ -117,25 +128,32 @@ class Executor:
 
 def _api_process(user_id: str, model_selected: str, petition_process_in_background=True):
     """
-    Execute api process in background (optional)
+    Execute api process in background (optional). Before it does it, it update the current global "PROBLEM_ID".
     Args:
         user_id: user id sent from PHP server/client
         petition_process_in_background: If the process will be executed in the background
     """
+
+    _update_project_configuration(new_project_id=model_selected)
+
     if petition_process_in_background:
         import subprocess
         import src.services.api.API as api
 
         try:  # Getting fullpath from api module
-            filepath = PROJECT_ROOT_PATH + str(api.__file__)
+            filepath = str(api.__file__)
             pt("filepath", filepath)
             bat_path = "Z:\\Data_Science\\Projects\\Framework_API_Consciences\\src\\AIModels_FW_main.bat"
             python_path = 'python "Z:\Data_Science\Projects\Framework_API_Consciences\src\MainLoop.py"' + " -i " + user_id
-            python_path = 'python ' + filepath + " -i " + user_id + " -m " + model_selected
+            python_path2 = 'python ' + filepath + " -i " + user_id + " -m " + model_selected
+            GS.LOGGER.write_to_logger("Opening from path: " + python_path)
             #p = subprocess.Popen(bat_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            GS.LOGGER.write_to_logger("New petition: \n" + "USER_ID: " + user_id +  " MODEL: " + model_selected)
             subprocess.Popen(python_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
-        except:
-            pass
+        except Exception as error:
+            GS.LOGGER.write_log_error(error)
+    else:
+        pass
 
 def _core_process():
 
@@ -231,7 +249,7 @@ def _core_process():
                       input_labels=y_train, test_labels=y_test,
                       number_of_classes=number_of_classes, type=None,
                       validation=None, validation_labels=None,
-                      execute_background_process=True, predict_flag=IS_PREDICTION)
+                      execute_background_process=True, predict_flag=GS.IS_PREDICTION)
     CMODEL.core(cmodels, CONFIG.call())
     """
     if __name__ == '__main__':

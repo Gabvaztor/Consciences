@@ -67,31 +67,18 @@ def execute_model(model: tf.keras.Sequential, **kwargs):
 
     # Batching values and labels from input and labels (with batch size)
 
-        # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
-        # train set.
-        # To restore model
-        if CMODEL.restore_model:
-            #self.load_and_restore_model_v2()
-            pass
-        # Besides this, when test/validation set requires check its accuracy but its size is very long to save
-        # in memory, it has to update all files during training to get the exact precision.
+    # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
+    # train set.
+    # To restore model
+    if CMODEL.restore_model:
+        #self.load_and_restore_model_v2()
+        fullpath_save = CMODEL.settings_object.model_path + CONFIG.model_name_saved
+        model = tf.keras.models.load_model(fullpath_save)
+    # Besides this, when test/validation set requires check its accuracy but its size is very long to save
+    # in memory, it has to update all files during training to get the exact precision.
 
-        #train_current_model(model=model)
-        CMODEL.train_current_model(model=model, config=CONFIG)
-
-
-def load_and_predict_image(fullpath_image):
-
-    #self.prediction(x_input=x_input, y_prediction=y_prediction, keep_probably=keep_probably, sess=sess)
-    start_time_load_model = datetime.datetime.now()
-    # Load model
-    fullpath_save = CMODEL.settings_object.model_path + "modelckpt_" + "my_model.h5"
-    model = tf.keras.models.load_model(fullpath_save)
-    delta = datetime.datetime.now() - start_time_load_model
-    pt("Time to load model ", delta.total_seconds())
-    # TODO (@gabvaztor) Finish
-    CMODEL.make_predictions(model=model)
-
+    #train_current_model(model=model)
+    CMODEL.train_current_model(model=model, config=CONFIG)
 
 def train_current_model(model: tf.keras.Sequential):
     pass

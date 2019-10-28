@@ -8,49 +8,33 @@ sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append('../../')
 
+import src.config.GlobalSettings as GS
 from src.utils.AsynchronousThreading import object_to_json
 from src.utils.Folders import write_string_to_pathfile
 from src.utils.Datetimes import date_from_format
 from src.utils.Prints import pt
-
+from src.services.api.PetitionObject import Petition, JSON_PETITION_NAME
 from src.services.processing.CPrediction import CPrediction
-
-try:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--userID", required=False,
-                    help="userID")
-    ap.add_argument("-m", "--userModelSelection", required=False,
-                    help="userModelSelection")
-
-    args = vars(ap.parse_args())
-
-    USER_ID = args["userID"] if "userID" in args else ""
-    MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else ""
-
-except Exception as e:
-    USER_ID = ""  # To avoid warning
-    sys.exit()
-
-PETITIONS = []
-TRIES = 0
-PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
-USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
+from src.config.Configurator import Configurator
 
 class AnswerConfiguration():
-    json_petition_name = "jsonPetition.json"
+    json_petition_name = JSON_PETITION_NAME
     json_answer_name = "jsonAnswer.json"
 
-    def __init__(self, petition_id):
+    def __init__(self, petition_id, prediction_results: CPrediction):
         self.petition_src = PATH_ + "\\" + petition_id + "\\"
         self.model_folder = os.listdir(self.petition_src)[0]
         self.final_petition_dir = self.petition_src + self.model_folder + "\\"
         self.json_src = self.final_petition_dir + self.json_petition_name
         self.json_answer_src = self.final_petition_dir + self.json_answer_name
-        self.answer = "OK"
         self.date = date_from_format(date=datetime.datetime.now())
         self.user_id = USER_ID
         self.user_id_path = USER_ID_PATH
         self.model_selected = MODEL_SELECTED
+        if prediction_results.results:
+            self.answer = prediction_results.readable_results
+        else:
+            self.answer = "OK"
 
 def execute_clasification(PETITIONS):
     """
@@ -65,15 +49,21 @@ def execute_clasification(PETITIONS):
     petitions_end_ok = []
 
     for petition_id in PETITIONS:
+        GS.LOGGER.write_to_logger("Petition was found: " + petition_id)
         try:
-            new_answer_configuration = AnswerConfiguration(petition_id=petition_id)
-            new_prediction = CPrediction(answer_configuration=new_answer_configuration)
+            # Read petition json
+            petition_path = PATH_ + "\\" + petition_id + "\\"
+            petition = Petition(path=petition_path)
+            prediction_results = CPrediction(current_petition=petition)
+            new_answer_configuration = AnswerConfiguration(petition_id=petition_id,
+                                                           prediction_results=prediction_results)
             json_answer_str = object_to_json(object=new_answer_configuration)
             pt(json_answer_str)
             write_string_to_pathfile(string=json_answer_str, filepath=new_answer_configuration.json_answer_src)
             petitions_end_ok.append(petition_id)
-        except Exception as e:
-            pt(e)
+            GS.LOGGER.write_to_logger("Petition finished")
+        except Exception as error:
+            GS.LOGGER.write_log_error(error)
 
     return petitions_end_ok
 
@@ -135,6 +125,30 @@ def run():
 
 
 if __name__ == "__main__":
-    #execute_asynchronous_thread(__get_new_online_petitions)
-    run()
+
+    try:
+
+        Configurator().run_basics()
+        ap = argparse.ArgumentParser()
+        ap.add_argument("-i", "--userID", required=False,
+                        help="userID")
+        ap.add_argument("-m", "--userModelSelection", required=False,
+                        help="userModelSelection")
+
+        args = vars(ap.parse_args())
+
+        GS.LOGGER.write_to_logger("API executed")
+        USER_ID = args["userID"] if "userID" in args else ""
+        MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else ""
+
+        PETITIONS = []
+        TRIES = 0
+        PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
+        USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
+        run()
+    except Exception as e:
+        USER_ID = ""  # To avoid warning
+        sys.exit()
+
+
 

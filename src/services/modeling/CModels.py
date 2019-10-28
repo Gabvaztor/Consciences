@@ -1539,7 +1539,7 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
         return image
 
 
-def process_input_unity_generic(x_input, y_label, options=None, is_test=False, to_save=False, to_predict=False):
+def process_input_unity_generic(x_input, y_label=None, options=None, is_test=False, to_save=False, to_predict=False):
     """
     Generic method that process input and label across a if else statement witch contains a string that represent
     the option (option = how process data)

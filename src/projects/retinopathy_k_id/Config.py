@@ -21,7 +21,10 @@ class Config():
     # Training
     learning_rate = 1e-4
     number_of_classes = 5
-
+    # Model
+    model_name_saved = "modelckpt_" + "my_model.h5"
+    # Options
+    options = [problem_id, 1, height, width]
 def _protected():
     pass
 
