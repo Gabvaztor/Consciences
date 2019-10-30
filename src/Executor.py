@@ -42,13 +42,7 @@ to code expressively, clearly and efficiently.
 Here you can download the library: https://pypi.python.org/pypi/easygui#downloads
 It had been used the version: 0.98.1
 '''
-import os
-import sys
 import importlib
-
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append('../../')
 
 import src.services.preparation.CCReader as tfr
 from src.config.Projects import Projects
@@ -119,6 +113,7 @@ class Executor:
         self.model_selected = model_selected
 
     def execute(self):
+        print("Executing...")
         if self.user_id and self.model_selected:  # If is not None, it is a Petition
             _api_process(user_id=self.user_id, model_selected=self.model_selected,
                          petition_process_in_background=True)
@@ -145,11 +140,16 @@ def _api_process(user_id: str, model_selected: str, petition_process_in_backgrou
             pt("filepath", filepath)
             bat_path = "Z:\\Data_Science\\Projects\\Framework_API_Consciences\\src\\AIModels_FW_main.bat"
             python_path = 'python "Z:\Data_Science\Projects\Framework_API_Consciences\src\MainLoop.py"' + " -i " + user_id
-            python_path2 = 'python ' + filepath + " -i " + user_id + " -m " + model_selected
-            GS.LOGGER.write_to_logger("Opening from path: " + python_path)
+            python_path2 = 'python "' + filepath + '" -i ' + user_id + ' -m ' + model_selected
+            if "\\..\\src" in python_path2:
+                python_path2 = python_path2.replace("\\..\\src", "")
+            pt("python_path2", python_path2)
+            GS.LOGGER.write_to_logger("Opening from path: " + python_path2)
             #p = subprocess.Popen(bat_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
             GS.LOGGER.write_to_logger("New petition: \n" + "USER_ID: " + user_id +  " MODEL: " + model_selected)
-            subprocess.Popen(python_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            GS.LOGGER.write_to_logger(python_path2)
+            process = subprocess.Popen(python_path2, creationflags=subprocess.CREATE_NEW_CONSOLE)
+
         except Exception as error:
             GS.LOGGER.write_log_error(error)
     else:

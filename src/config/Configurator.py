@@ -5,6 +5,7 @@ The function of this module is:
     - Execute main module
 """
 import sys, os
+sys.path.append(__file__)
 
 from .GlobalDecorators import DecoratorClass
 import src.config.GlobalSettings as GS
@@ -79,11 +80,13 @@ class Configurator:
     def activate_logger(self):
         if not self.__check_logger_status():
             GS.LOGGER = Logger()
+            GS.LOGGER.write_to_logger("Logger activated")
         return GS.LOGGER
 
     def __check_logger_status(self):
         if GS.LOGGER:
             return True
+
     def run(self, modules=None):
         self.__relative_imports_step_1()
         if not GS.API_MODE:
@@ -94,5 +97,5 @@ class Configurator:
         return success
 
     def run_basics(self):
-        self.__wrap_decorators_step_2()
+        self.__relative_imports_step_1()
         self.activate_logger()

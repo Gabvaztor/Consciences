@@ -11,10 +11,9 @@ This class contains useful functions
 # --------------------------------------------------------------------------
 """
 """LOCAL IMPORTS"""
-from .Dictionary import Dictionary
-from .Prints import pt
-from .Errors import Errors
-
+from src.utils.Dictionary import Dictionary
+from src.utils.Prints import pt
+from src.utils.Errors import Errors
 import src.utils.Folders as folders
 
 
@@ -37,9 +36,6 @@ from decimal import Decimal
 To install pandas: pip3 install pandas
 '''
 import pandas as pd
-
-"""TensorFlow"""
-import tensorflow as tf
 
 """Json"""
 import json
@@ -285,41 +281,6 @@ def save_submission_to_csv(path_to_save, dictionary):
     pt("Saving to csv in path...")
     submission.to_csv(path_to_save, index=False, encoding='utf-8')
     pt("Save successfully")
-
-
-def smape(y_true, y_prediction):
-    tot = tf.reduce_sum(y_true)
-    map = tf.truediv((tf.subtract(tf.abs(y_prediction), tf.abs(y_true))),
-                     (tf.add(tf.abs(y_true), tf.abs(y_prediction))) / 2.0)
-    smape = tf.realdiv(100 * map, tot)
-    return smape
-
-
-def mean_difference_percentages(y_true, y_prediction):
-    # Total from real
-    total_real = tf.reduce_sum(y_true)
-    # For each element, we calculate the abs difference and, after that, we calculate the percent respect total.
-    difference = tf.abs(tf.subtract(y_true, y_prediction))
-    mean_difference = tf.truediv((difference * 100), total_real)
-    return mean_difference
-
-
-def rmse(y_true, y_prediction):
-    return tf.sqrt(tf.reduce_mean(tf.square(tf.subtract(y_true, y_prediction))))
-
-
-def mape(y_true, y_prediction):
-    tot = tf.reduce_sum(y_true)
-    wmape = tf.realdiv(tf.reduce_sum(tf.abs(tf.subtract(y_true, y_prediction))), tot) * 100  # /tot
-    return (wmape)
-
-
-def mae(y_true, y_prediction, batch_size):
-    total_sum_y_true = tf.reduce_sum(y_true)
-    total_sum_y_prediction = tf.reduce_sum(y_prediction)
-    error = tf.sqrt(tf.abs((tf.subtract(y_true, y_prediction))))
-    return error
-
 
 def convert_to_numpy_array(to_convert_to_numpy_array_list):
     to_return = []

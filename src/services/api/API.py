@@ -1,40 +1,83 @@
 """
 
 """
-import os, sys, time, datetime,  argparse
-from timeit import default_timer as timer
+import os, sys
 
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append('../../')
+def __relative_imports(number_of_descent):
+    sub_folders = "\\.."
+    file = __file__
+    #print("original file: " + file)
+    c_path = ""
+    tf_path_ = r""
+    sys.path.append(c_path)
+    sys.path.append(c_path + "\\..")
+    for _ in range(7):
+        sys.path.append(tf_path_)
+        tf_path_ = os.path.dirname(tf_path_)
+    for _ in range(number_of_descent):
+        file = os.path.dirname(file)
+        sys.path.append(file)
+        #print("file: ", file + sub_folders)
+        #sys.path.append(file + sub_folders)
+        #sys.path.append(file + sub_folders + "\\")
+    root_folder = str(file + "\\")
+    root_folder_children = str(file + "..")
+    #print("root_folder:", root_folder)
+    #print("root_folder_children:", root_folder_children)
+    sys.path.append("..")
+    #print(sys.path)
+    sys.path = list(set(sys.path))
+    [print(x) for x in sys.path]
+    """
+    for path in sys.path:
+        print("path0: " + path)
+        if "src\\..\\src" in path:
+            print("path1: " + path)
+            path.replace("src\\..\\src", "src")
+            print("path2: " + path)
+    print(sys.path)
+    """
+if __name__ == "__main__":
+    __relative_imports(number_of_descent=4)
+
+import time, datetime,  argparse
+from timeit import default_timer as timer
 
 import src.config.GlobalSettings as GS
 from src.utils.AsynchronousThreading import object_to_json
 from src.utils.Folders import write_string_to_pathfile
 from src.utils.Datetimes import date_from_format
 from src.utils.Prints import pt
-from src.services.api.PetitionObject import Petition, JSON_PETITION_NAME
-from src.services.processing.CPrediction import CPrediction
+from utils.PetitionObject import Petition, JSON_PETITION_NAME
 from src.config.Configurator import Configurator
+from src.services.processing.CPrediction import CPrediction
 
 class AnswerConfiguration():
     json_petition_name = JSON_PETITION_NAME
     json_answer_name = "jsonAnswer.json"
 
-    def __init__(self, petition_id, prediction_results: CPrediction):
+    def __init__(self, petition_id, prediction_results=None):
         self.petition_src = PATH_ + "\\" + petition_id + "\\"
         self.model_folder = os.listdir(self.petition_src)[0]
         self.final_petition_dir = self.petition_src + self.model_folder + "\\"
-        self.json_src = self.final_petition_dir + self.json_petition_name
+        self.json_petition_src = self.final_petition_dir + self.json_petition_name
         self.json_answer_src = self.final_petition_dir + self.json_answer_name
         self.date = date_from_format(date=datetime.datetime.now())
         self.user_id = USER_ID
         self.user_id_path = USER_ID_PATH
         self.model_selected = MODEL_SELECTED
-        if prediction_results.results:
-            self.answer = prediction_results.readable_results
+        prediction_results = self.__get_results(prediction_results)
+        if prediction_results:
+            if prediction_results.results:
+                self.answer = prediction_results.readable_results
+            else:
+                self.answer = "NOK"
         else:
-            self.answer = "OK"
+            self.answer = "NOK"
+
+    def __get_results(self, prediction_results: CPrediction):
+        return prediction_results
+
 
 def execute_clasification(PETITIONS):
     """
@@ -52,8 +95,9 @@ def execute_clasification(PETITIONS):
         GS.LOGGER.write_to_logger("Petition was found: " + petition_id)
         try:
             # Read petition json
-            petition_path = PATH_ + "\\" + petition_id + "\\"
-            petition = Petition(path=petition_path)
+            # TODO (@gabvaztor) Create a different object class to manage paths logic
+            path_config = AnswerConfiguration(petition_id=petition_id)
+            petition = Petition(path=path_config.json_petition_src)
             prediction_results = CPrediction(current_petition=petition)
             new_answer_configuration = AnswerConfiguration(petition_id=petition_id,
                                                            prediction_results=prediction_results)
@@ -63,6 +107,8 @@ def execute_clasification(PETITIONS):
             petitions_end_ok.append(petition_id)
             GS.LOGGER.write_to_logger("Petition finished")
         except Exception as error:
+            import traceback
+            traceback.print_exc()
             GS.LOGGER.write_log_error(error)
 
     return petitions_end_ok
@@ -126,8 +172,11 @@ def run():
 
 if __name__ == "__main__":
 
+    #__relative_imports_step_1()
     try:
-
+        # Example:
+        # python "Z:\Data_Science\Projects\Consciences\src\services\api\API.py"
+        # -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
         Configurator().run_basics()
         ap = argparse.ArgumentParser()
         ap.add_argument("-i", "--userID", required=False,
@@ -145,9 +194,11 @@ if __name__ == "__main__":
         TRIES = 0
         PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
         USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
-        run()
+        __get_new_online_petitions()
+
     except Exception as e:
         USER_ID = ""  # To avoid warning
+        GS.LOGGER.write_log_error(e)
         sys.exit()
 
 

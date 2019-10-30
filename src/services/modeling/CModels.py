@@ -1535,8 +1535,8 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
                 folders.create_directory_from_fullpath(fullpath=fullpath_to_save)
                 PIL.Image.fromarray(image).save(fullpath_to_save + ".jpeg")
         else:
-            image = np.asarray(image)/255.0
-        return image
+            image = np.asarray(image)
+        return image/255.0
 
 
 def process_input_unity_generic(x_input, y_label=None, options=None, is_test=False, to_save=False, to_predict=False):
@@ -1684,3 +1684,24 @@ def input_while():
     global INPUT_VALUE
     while True:
         INPUT_VALUE = input()
+
+def data_treatment_generic_problem(input, inputs_labels, options=None, to_predict=False):
+    """
+
+    Args:
+        input:
+        inputs_labels:
+        options:
+
+    Returns:
+
+    """
+    x_batch = []
+    y_batch = []
+    x, y = process_input_unity_generic(input, inputs_labels, options, to_predict=to_predict)
+    x_batch.append(x)
+    y_batch.append(y)
+    x_batch = np.asarray(x_batch)
+    y_batch = np.asarray(y_batch)
+
+    return x_batch, y_batch
