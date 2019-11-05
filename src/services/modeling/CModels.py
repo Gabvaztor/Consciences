@@ -24,7 +24,7 @@ from __future__ import print_function
 """
 
 '''LOCAL IMPORTS'''
-
+import src.config.GlobalSettings as GS
 import src.utils.Inputs as inputs
 import src.utils.UtilsFunctions as utils
 import src.utils.Jsons as jsons
@@ -35,7 +35,6 @@ from src.utils.Constants import Constant
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
 import src.utils.Prints as prints
-from src.utils.Logger import Logger
 from src.config.Projects import Projects
 from src.config.GlobalDecorators import DecoratorClass
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
@@ -52,8 +51,9 @@ http://www.numpy.org/
 https://en.wikipedia.org/wiki/NumPy '''
 import numpy as np
 
-''' Matlab URL: http://matplotlib.org/users/installing.html'''
-import matplotlib.pyplot as plt
+if not GS.MINIMUM_IMPORTS:
+    ''' Matlab URL: http://matplotlib.org/users/installing.html'''
+    import matplotlib.pyplot as plt
 
 ''' Pillow URL: https://pillow.readthedocs.io/en/5.1.x/
 Problem with OpenCV on Raspbian. Installed Pillow. '''
@@ -94,12 +94,13 @@ import gc
 import os
 
 import tensorflow as tf
+
 """ GLOBAL VARIABLES"""
 global GLOBAL_FUNCTION
 global GLOBAL_METADATA
 INPUT_VALUE = ""
 CONSOLE_WORDS_OPTION = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
-from src.config.GlobalSettings import PROBLEM_ID
+
 
 class CModels():
     """
@@ -733,7 +734,7 @@ class CModels():
             pass
     def convolution_model_image_v2(self):
         import importlib
-        package = "src.projects." + PROBLEM_ID + ".modeling"
+        package = "src.projects." + GS.PROBLEM_ID + ".modeling"
         module_name = ".Models"
         models = importlib.import_module(name=module_name, package=package)
         models.main(self)

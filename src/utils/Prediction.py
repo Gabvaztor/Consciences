@@ -3,7 +3,7 @@
 
 """
 
-import src.services.ccboost.TFEncoder as tfencoder
+#import src.services.cboost.TFEncoder as tfencoder
 import src.utils.UtilsFunctions as utils
 
 class Prediction():
@@ -11,7 +11,7 @@ class Prediction():
 
     """
     information = ""
-    json = tfencoder.Dictionary.string_json_extension
+    #json = tfencoder.Dictionary.string_json_extension
 
 # German signals images
 class ImagePrediction(Prediction):

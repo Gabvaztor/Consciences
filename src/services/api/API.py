@@ -1,19 +1,16 @@
 """
 
 """
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import os, sys
 
 def __relative_imports(number_of_descent):
     sub_folders = "\\.."
     file = __file__
     #print("original file: " + file)
-    c_path = ""
-    tf_path_ = r""
-    sys.path.append(c_path)
-    sys.path.append(c_path + "\\..")
-    for _ in range(7):
-        sys.path.append(tf_path_)
-        tf_path_ = os.path.dirname(tf_path_)
     for _ in range(number_of_descent):
         file = os.path.dirname(file)
         sys.path.append(file)
@@ -28,17 +25,8 @@ def __relative_imports(number_of_descent):
     #print(sys.path)
     sys.path = list(set(sys.path))
     [print(x) for x in sys.path]
-    """
-    for path in sys.path:
-        print("path0: " + path)
-        if "src\\..\\src" in path:
-            print("path1: " + path)
-            path.replace("src\\..\\src", "src")
-            print("path2: " + path)
-    print(sys.path)
-    """
-if __name__ == "__main__":
-    __relative_imports(number_of_descent=4)
+
+__relative_imports(number_of_descent=4)
 
 import time, datetime,  argparse
 from timeit import default_timer as timer
@@ -97,7 +85,7 @@ def execute_clasification(PETITIONS):
             # Read petition json
             # TODO (@gabvaztor) Create a different object class to manage paths logic
             path_config = AnswerConfiguration(petition_id=petition_id)
-            petition = Petition(path=path_config.json_petition_src)
+            petition = Petition(path=path_config.json_petition_src, petition_id=petition_id)
             prediction_results = CPrediction(current_petition=petition)
             new_answer_configuration = AnswerConfiguration(petition_id=petition_id,
                                                            prediction_results=prediction_results)
@@ -170,13 +158,39 @@ def run():
     __get_new_online_petitions()
 
 
+try:
+    # Example:
+    # python "../API.py"  -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
+    Configurator().run_basics()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--userID", required=False,
+                    help="userID")
+    ap.add_argument("-m", "--userModelSelection", required=False,
+                    help="userModelSelection")
+
+    args = vars(ap.parse_args())
+
+    GS.LOGGER.write_to_logger("API executed")
+    USER_ID = args["userID"] if "userID" in args else ""
+    MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else ""
+
+    PETITIONS = []
+    TRIES = 0
+    PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
+    USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
+    __get_new_online_petitions()
+
+except Exception as e:
+    USER_ID = ""  # To avoid warning
+    GS.LOGGER.write_log_error(e)
+    sys.exit()
+
 if __name__ == "__main__":
 
     #__relative_imports_step_1()
     try:
         # Example:
-        # python "Z:\Data_Science\Projects\Consciences\src\services\api\API.py"
-        # -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
+        # python "..\API.py" -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
         Configurator().run_basics()
         ap = argparse.ArgumentParser()
         ap.add_argument("-i", "--userID", required=False,

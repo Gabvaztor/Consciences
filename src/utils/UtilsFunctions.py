@@ -11,6 +11,7 @@ This class contains useful functions
 # --------------------------------------------------------------------------
 """
 """LOCAL IMPORTS"""
+import src.config.GlobalSettings as GS
 from src.utils.Dictionary import Dictionary
 from src.utils.Prints import pt
 from src.utils.Errors import Errors
@@ -26,22 +27,23 @@ import os
 """Numpy"""
 import numpy as np
 
-""" Shutil for copy and moves files"""
-from shutil import *
+
 
 """ TO SOLVE sum(list) not exact problem"""
 from decimal import Decimal
 
-'''
-To install pandas: pip3 install pandas
-'''
-import pandas as pd
-
+if not GS.MINIMUM_IMPORTS:
+    '''
+    To install pandas: pip3 install pandas
+    '''
+    import pandas as pd
+    """Collection"""
+    import collections
+    """ Shutil for copy and moves files"""
+    from shutil import *
 """Json"""
 import json
 
-"""Collection"""
-import collections
 
 import traceback
 

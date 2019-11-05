@@ -30,23 +30,29 @@ import os, datetime, sys
 #sys.path.append(__file__)
 
 import src.services.modeling.CModels as models
+import src.config.GlobalSettings as GS
 import tensorflow as tf
 from src.config.Projects import Projects
 from src.utils.Prints import pt
 from src.utils.PetitionObject import Petition
-from src.config.GlobalSettings import GPU_TO_PREDICT
+from src.utils.Logger import Logger
 
-if not GPU_TO_PREDICT:
+if not GS.GPU_TO_PREDICT:
     os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
+LOGGER = GS.LOGGER if GS.LOGGER else Logger()
+
 
 class CPrediction():
 
-    def __init__(self, current_petition=None, input=None):
+    def __init__(self, current_petition=None, input=None, id=None):
+        self.id = id if id else None
         # Load updated config
         self.config = Projects.get_problem_config()
         # Load updated settings
         self.settings = Projects.get_settings()
         if current_petition:
+            self.petition_id = current_petition.petition_id if current_petition.petition_id else None
             current_petition = self.__get_petition(current_petition)
             input_path = current_petition.absolute_folder_path + current_petition.image_name
             pt("input_path", input_path)
@@ -90,23 +96,26 @@ class CPrediction():
         4 - Proliferative DR
         Returns: type of retinopathy
         """
-        pt("self.results", type(self.results))
-        pt("self.results", (self.results))
-        pt("max.results", max(self.results[0]))
-        pt("index_max.results", self.results[0].index(max(self.results[0])))
-        max_index = self.results[0].index(max(self.results[0]))
-        result_type = "Cannot evaluate"
-        if max_index == 0:
-            result_type = "No Retinopathy"
-        if max_index == 1:
-            result_type = "Mild Retinopathy"
-        if max_index == 2:
-            result_type = "Moderate Retinopathy"
-        if max_index == 3:
-            result_type = "Severe Retinopathy"
-        if max_index == 4:
-            result_type = "Proliferative Retinopathy"
-        return str(result_type)
+        try:
+            results = str(self.results)
+            max_results = str(max(self.results[0]))
+            id_ = self.petition_id
+            max_index = self.results[0].index(max(self.results[0]))
+            labels = ["No Retinopathy", "Mild Retinopathy", "Moderate Retinopathy", "Severe Retinopathy",
+                      "Proliferative Retinopathy"]
+
+            result_type = labels[max_index]
+            to_write = "RETINOPATHY" + "\nID: " + str(id_) + "\nresults: " + results + \
+                       "\nmax_results: " + max_results + "\nresult_type: " + result_type
+
+            to_show = "Most probably case: " + result_type + "<br>"
+            for index, result in enumerate(self.results[0]):
+                to_show += "Probability of '" + str(labels[index]) + "': " + "{0:.2f}".format(result*100) + "%<br>"
+            to_show = to_show.replace("<br>","\\r\\n")
+            LOGGER.write_to_logger(to_write + "\n\nTo show\n\n" + to_show)
+            return to_show
+        except Exception as e:
+            LOGGER.write_log_error(e)
 
     def load_model(self, model_fullpath) -> tf.keras.Sequential:
         """

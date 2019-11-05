@@ -24,6 +24,9 @@ GPU_TO_PREDICT = False
 # the other one represents the end of the function.
 TIMED_FLAG_DECORATOR = False
 
+# Minimum imports. If True, it doesn't import unnecessaries libraries to execute whole project.
+MINIMUM_IMPORTS = True
+
 # Root path directory
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

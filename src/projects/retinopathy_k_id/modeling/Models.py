@@ -1,6 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import tensorflow as tf
 import tensorflow.keras.layers as layers
-import datetime
 
 from src.services.modeling.CModels import CModels
 from ..Config import Config

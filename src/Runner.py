@@ -26,7 +26,9 @@ https://google.github.io/styleguide/pyguide.html
 Notes:
     * This file use TensorFlow version >2.0.
 """
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 def __get_root_project(number_of_descent):
     import sys, os
     sub_folders = "\\.."

@@ -20,9 +20,10 @@ class Petition():
 
     # TODO (@gabvaztor) Create new variable that save "generic path". This means that you only have to specify only one
     # path and system will get (from a generic structure) other paths.
-    def __init__(self, path=None):
+    def __init__(self, path, petition_id):
         if path:
             self.path = path
+            self.petition_id = petition_id
             print("path to open: " + self.path)
             self._load_settings()
             self.absolute_folder_path = self.folder_path.replace("..\\", PETITION_FOLDER)

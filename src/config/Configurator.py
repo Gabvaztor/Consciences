@@ -7,8 +7,8 @@ The function of this module is:
 import sys, os
 sys.path.append(__file__)
 
-from .GlobalDecorators import DecoratorClass
 import src.config.GlobalSettings as GS
+from .GlobalDecorators import DecoratorClass
 from src.utils.Logger import Logger
 from src.utils.Prints import pt
 
