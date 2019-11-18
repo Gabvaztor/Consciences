@@ -1,5 +1,8 @@
 import os
+import pathlib
+import shutil
 from .Errors import Errors
+
 
 def write_string_to_pathfile(string, filepath):
     """
@@ -54,3 +57,18 @@ def get_directory_from_filepath(filepath):
 
 def get_filename_from_filepath(filepath):
     return os.path.basename(filepath)
+
+def copy_entire_directory_to_path(path_to_be_copied, path_to_be_paste):
+
+    # Create path
+    pathlib.Path(path_to_be_paste).mkdir(parents=True, exist_ok=True)
+    copytree(src=path_to_be_copied, dst=path_to_be_paste)
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)

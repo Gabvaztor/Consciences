@@ -27,9 +27,12 @@ TIMED_FLAG_DECORATOR = False
 # Minimum imports. If True, it doesn't import unnecessaries libraries to execute whole project.
 MINIMUM_IMPORTS = False
 
-# Root path directory
+# SRC Root path directory
 import os
 PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Completed root path
+ROOT_PATH = os.path.dirname(PROJECT_ROOT_PATH)
 
 # Logger: Logger is activated by Configurator if None
 LOGGER = None
