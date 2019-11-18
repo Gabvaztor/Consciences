@@ -11,7 +11,7 @@ https://google.github.io/styleguide/pyguide.html
 
 """
 # -*- coding: utf-8 -*-
-#from __future__ import absolute_import
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -102,6 +102,12 @@ INPUT_VALUE = ""
 CONSOLE_WORDS_OPTION = ["WAIT -t", "SAVE", "CODE 'a condition'", "STOP", "HELP"]
 
 
+
+if not GS.GPU_TO_TRAIN:
+    os.environ["NUM_CUDA_VISIBLE_DEVICES"] = "0"
+else:
+    pt("Cuda visible from CModels:",2)
+
 class CModels():
     """
     Long Docs ...
@@ -110,6 +116,8 @@ class CModels():
     def __init__(self, setting_object=None, option_problem=None, input_data=None, test=None, input_labels=None,
                  test_labels=None, number_of_classes=None , type=None, validation=None, validation_labels=None,
                  predict_flag=False, execute_background_process=False):
+        global LOGGER
+        LOGGER = GS.LOGGER
         # TODO (@gabvaztor) Show and save graphs during all training asking before
         # TODO (@gabvaztor) Run some operations in other python execution or multiprocessing
         # NOTE: IF YOU LOAD_MODEL_CONFIGURATION AND CHANGE SOME TENSORFLOW ATTRIBUTE AS NEURONS, THE TRAIN WILL START
@@ -143,7 +151,7 @@ class CModels():
         self._show_advanced_info = False  # Labels and logits info.
         self._show_images = False  # If True show images when show_info is True
         self._save_model_configuration = False  # If True, then all attributes will be saved in a settings_object path.
-        self._shuffle_data = True  # If True, then the train and validation data will be shuffled separately.
+        self._shuffle_data = False  # If True, then the train and validation data will be shuffled separately.
         self._generate_predictions = False  # If true, it tries to generate a prediction
         self._save_graphs_images = False  # If True, then save graphs images from statistical values. NOTE that this will
         # decrease the performance during training. Although this is true or false, for each time an epoch has finished,
@@ -152,7 +160,7 @@ class CModels():
         self._input_rows_numbers = option_problem[2] if option_problem else None  # For example, in german problem, number of row pixels
         self._input_columns_numbers = option_problem[3] if option_problem else None  # For example, in german problem, number of column pixels
         self._epoch_numbers = 20  # Epochs number
-        self._batch_size = 15  # Batch size
+        self._batch_size = 10  # Batch size
         if self.input is not None and not self.restore_to_predict:  # Change if necessary
             self._input_size = self.input.shape[0]  # Change if necessary
             self._trains = int(self.input_size / self.batch_size) + 1  # Total number of trains for epoch
@@ -764,16 +772,16 @@ class CModels():
         """
 
         Args:
-            model:
-            config:
+            model: Model to be trained
+            config: Current configuration
 
         Returns:
 
         """
         global INPUT_VALUE
         #DEBUG_MODE = kwargs['DEBUG']
-        self.update_batch(create_dataset_flag=False)
-        self.update_batch(is_test=True)
+        self.update_batch(create_dataset_flag=False)  # Generate first train batch
+        self.update_batch(is_test=True)  # Generate test batch
 
         # TRAIN VARIABLES
         start_time = time.time()  # Start time
@@ -782,7 +790,42 @@ class CModels():
         # To load accuracies and losses
         accuracies_train, accuracies_test, loss_train, loss_test = utils.load_accuracies_and_losses(
             self.settings_object.accuracies_losses_path, self.restore_model)
+        """
+        # Graph
+        x_vec = np.linspace(0,1,100+1)[0:-1]
+        y_vec = np.zeros(len(x_vec))
+        line1 = []
+        # use ggplot style for more sophisticated visuals
+        plt.style.use('ggplot')
 
+        def live_plotter(x_vec,y1_data,line1,identifier='',pause_time=0.01):
+            if line1==[]:
+                # this is the call to matplotlib that allows dynamic plotting
+                plt.ion()
+                fig = plt.figure(figsize=(13,6))
+                ax = fig.add_subplot(111)
+                # create a variable for the line so we can later update it
+                line1, = ax.plot(x_vec,y1_data,'-o',alpha=0.8)
+                #update plot label/title
+                plt.ylabel('Y Label')
+                plt.title('Title: {}'.format(identifier))
+                plt.show()
+
+            # after the figure, axis, and line are created, we only need to update the y-data
+            line1.set_ydata(y1_data)
+            # adjust limits if new data goes beyond bounds
+            if np.min(y1_data)<=line1.axes.get_ylim()[0] or np.max(y1_data)>=line1.axes.get_ylim()[1]:
+                plt.ylim([np.min(y1_data)-np.std(y1_data),np.max(y1_data)+np.std(y1_data)])
+            # this pauses the data so the figure/axis can catch up - the amount of pause can be altered above
+            plt.pause(pause_time)
+
+            # return line so we can update it again in the next iteration
+            return line1
+
+        y_vec[-1] = self.train_accuracy
+        line1 = live_plotter(x_vec, y_vec, line1)
+        y_vec = np.append(y_vec[1:],0.0)
+        """
         # Folders and file where information and configuration files will be saved.
         filepath_save = None
         # Update real self.num_actual_trains:
@@ -793,6 +836,8 @@ class CModels():
         # you restore a model and num_actual_trains2 fails to load. Otherwise, num_actual_trains contains rigth value.
         is_new_epoch_flag = False  # Represent if training come into a new epoch. With this, a graph will be saved each
         # new epoch
+        pt("Training model...")
+        pt("metrics_names", model.metrics_names)
         # START  TRAINING
         for epoch in range(self.num_epochs_count, self.epoch_numbers):  # Start with load value or 0
             if is_new_epoch_flag:
@@ -805,18 +850,32 @@ class CModels():
                 self.update_batch()
             for num_train in range(self.num_actual_trains, self.trains):  # Start with load value or 0
                 # Setting values
-                model.train_on_batch(x=self.input_batch, y=self.label_batch)
+                #self.train_loss, self.train_accuracy = model.train_on_batch(x=self.input_batch, y=self.label_batch)
+                train_metrics = model.train_on_batch(x=self.input_batch, y=self.label_batch)
+
+
                 # TODO(@gabvaztor) Add validation_accuracy to training when necessary
-                test_results = model.evaluate(self.x_test, self.y_test, verbose=0)
-                train_results = model.evaluate(self.input_batch, self.label_batch, verbose=0)
+                #self.test_loss, self.test_accuracy = model.evaluate(self.x_test, self.y_test, verbose=0)
+                test_metrics = model.evaluate(self.x_test, self.y_test, verbose=0)
 
-                self.test_loss, self.test_accuracy = test_results, 0
-                self.train_loss, self.train_accuracy = train_results, 0
-                # TODO (@gabvaztor) Get train and test accuracies
+                test_labels_predicted = np.argmax(np.array(model(self.x_test, training=False)), axis=1)
+                train_labels_predicted = np.argmax(np.array(model(self.input_batch, training=False)), axis=1)
 
-                to_append = " || Train loss: " + str(self.train_loss) + " || Test loss: " + str(self.test_loss)
-                prints.show_percent_by_total(total=self.input_size, count_number=self.index_buffer_data,
-                                             to_append=to_append)
+                pt("test_labels_predicted", test_labels_predicted)
+                pt("self.y_test", np.argmax(self.y_test, axis=-1))
+                pt("train_labels_predicted", train_labels_predicted)
+                pt("self.label_batch", np.argmax(self.label_batch, axis=-1))
+                [pt("train_" + model.metrics_names[i], train_metrics[i]) for i in range(len(train_metrics))]
+                [pt("test_" + model.metrics_names[i], test_metrics[i]) for i in range(len(test_metrics))]
+
+                self.train_loss = train_metrics[0]
+                self.test_loss = test_metrics[0]
+                self.train_accuracy = train_metrics[1]
+                self.test_accuracy = test_metrics[1]
+
+                pt("Train loss", self.train_loss)
+                pt("Train accuracy", str(self.train_accuracy * 100) + "%")
+
                 self.train_accuracy_sum += self.train_accuracy
                 # To generate statistics
                 accuracies_train.append(self.train_accuracy)
@@ -824,22 +883,35 @@ class CModels():
                 loss_train.append(self.train_loss)
                 loss_test.append(self.test_loss)
 
+                # TODO (@gabvaztor) Each X time, do a backup and continue training.
+
+                # Update time
+                delta = actual_delta + (time.time() - start_time)
+                self.delta_time = delta
+                day = str(int(time.strftime("%d", time.gmtime(delta))) - 1)
+                to_append = "Time: " + str(time.strftime(day + " Days - %Hh%Mm%Ss", time.gmtime(delta))) + \
+                            " || Train loss: " + str(self.train_loss) + " || Test loss: " + str(self.test_loss) + \
+                            " || train_accuracy: " + str(self.train_accuracy) + " || test_accuracy: " + \
+                            str(self.test_accuracy) + " || Trains: " + str(self.num_trains_count) + " || Epoch: " + \
+                            str(epoch)
+
+                prints.show_percent_by_total(total=self.input_size, count_number=self.index_buffer_data,
+                                             to_append=to_append)
                 with tf.device('/cpu:0'):
                     numpy_arrays = [accuracies_train, accuracies_test, loss_train, loss_test]
                     numpy_names = ["accuracies_train", "accuracies_test", "loss_train", "loss_test"]
                     execute_asynchronous_thread(functions=utils.save_numpy_arrays_generic,
-                                                arguments=(self.settings_object.accuracies_losses_path, numpy_arrays,
+                                                arguments=(self.settings_object.accuracies_losses_path,
+                                                           numpy_arrays,
                                                            numpy_names),
                                                 kwargs=None)
+
+
                 #y_pre = y_prediction.eval(feed_dict_train_100)
                 #prediction_ = np.argmax(y_pre, axis=1)
                 #p = tf.argmax(y_prediction, axis=1).eval(feed_dict_train_100)
 
 
-                # Update time
-                delta = actual_delta + (time.time() - start_time)
-                self.delta_time = delta
-                # TODO (@gabvaztor) Each X time, do a backup and continue training.
 
                 # Update actual
                 if num_train % self.print_information == 0 or INPUT_VALUE != "" :
@@ -874,7 +946,7 @@ class CModels():
                 if (num_train % self.print_information == 0) and num_train >= self.print_information:
                     save_type = 1
                 if save_type > 0:  # 0, not save | 1, train save | 2, force save
-                    filepath_save_ = self.save_actual_model(model, save_type=save_type)
+                    filepath_save_ = self.save_actual_model(model, save_type=save_type, config=config)
                     #fullpath_save = self.settings_object.model_path + "my_model.h5"
                     #model.save(fullpath_save)
                     pt("Model saved")
@@ -981,13 +1053,16 @@ class CModels():
                                   options=None, create_dataset_flag=False):
         """
         Create a data buffer having necessaries class attributes (inputs,labels,...)
-        :param inputs: Inputs
-        :param inputs_labels: Inputs labels
-        :param shuffle_data: If it is necessary shuffle data.
-        :param batch_size: The batch size.
-        :param is_test: if the inputs are the test set.
-        :param options: options
-        :return: Two numpy arrays (x_batch and y_batch) with input data and input labels data batch_size like shape.
+        Args:
+            inputs: Inputs
+            inputs_labels: Inputs labels
+            shuffle_data: If it is necessary shuffle data.
+            batch_size: The batch size.
+            is_test: if the inputs are the test set.
+            options: options
+            create_dataset_flag: Two numpy arrays (x_batch and y_batch) with input data and input labels data batch_size like shape.
+
+        Returns: x and y batch (can be for train, test or validation)
         """
         x_batch = []
         y_batch = []
@@ -1008,8 +1083,8 @@ class CModels():
                 x_batch.append(x)
                 y_batch.append(y)
                 self.index_buffer_data += 1
-            x_batch = np.asarray(x_batch)
-            y_batch = np.asarray(y_batch)
+            x_batch = np.array(x_batch)
+            y_batch = np.array(y_batch)
             if out_range:  # Reset index_buffer_data
                 pt("index_buffer_data OUT OF RANGE")
                 self.index_buffer_data = 0
@@ -1282,11 +1357,11 @@ class CModels():
        #pt('index_buffer_data', self.index_buffer_data)
         #pt("SMAPE", smape(y__, y__prediction).eval(feed_dict))
 
-    def save_actual_model(self, model: tf.keras.Sequential, save_type):
+    def save_actual_model(self, model: tf.keras.Sequential, save_type, config):
         # Save variables to disk.
         if self.settings_object.model_path:
             try:
-                fullpath_save = self.settings_object.model_path + "modelckpt_" + "my_model.h5"
+                fullpath_save = self.settings_object.model_path + config.model_name_saved
                 pt("fullpath_save", fullpath_save)
                 if save_type == 2:  # Force save, temp save
                     fullpath_save = utils.get_temp_file_from_fullpath(fullpath_save)
@@ -1498,7 +1573,7 @@ def get_inputs_and_labels_shuffled(inputs, inputs_labels):
     c = list(zip(inputs, inputs_labels))
     random.shuffle(c)
     inputs_processed, labels_processed = zip(*c)
-    inputs_processed, labels_processed = np.asarray(inputs_processed), np.asarray(labels_processed)
+    inputs_processed, labels_processed = np.array(inputs_processed), np.array(labels_processed)
     return inputs_processed, labels_processed
 
 
@@ -1515,7 +1590,7 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
         if to_save or to_predict:
             #  TODO(@gabvaztor) Delete width black pixels, resize and save to x,y resolution
             # Resize image and modify
-            image_array = np.asarray(image)[:, 140:-127, :]
+            image_array = np.array(image)[:, 140:-127, :]
             image = PIL.Image.fromarray(image_array)
             width2, height2 = image.size
             pt("width2", width2)
@@ -1536,8 +1611,9 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
                 folders.create_directory_from_fullpath(fullpath=fullpath_to_save)
                 PIL.Image.fromarray(image).save(fullpath_to_save + ".jpeg")
         else:
-            image = np.asarray(image)
-        return image/255.0
+            image = np.array(image)
+        #pt("image2", type(image))
+        return image/255.
 
 
 def process_input_unity_generic(x_input, y_label=None, options=None, is_test=False, to_save=False, to_predict=False):
@@ -1563,7 +1639,6 @@ def process_input_unity_generic(x_input, y_label=None, options=None, is_test=Fal
                                                 width=options[3], is_test=is_test, to_save=to_save,
                                                 cv2_flag=False, debug_mode=False, to_predict=to_predict)
     return x_input, y_label
-
 
 # noinspection PyUnresolvedReferences
 def process_image_signals_problem(image, image_type, height, width, is_test=False, cv2_flag=False, debug_mode=False):
@@ -1702,7 +1777,7 @@ def data_treatment_generic_problem(input, inputs_labels, options=None, to_predic
     x, y = process_input_unity_generic(input, inputs_labels, options, to_predict=to_predict)
     x_batch.append(x)
     y_batch.append(y)
-    x_batch = np.asarray(x_batch)
-    y_batch = np.asarray(y_batch)
+    x_batch = np.array(x_batch)
+    y_batch = np.array(y_batch)
 
     return x_batch, y_batch

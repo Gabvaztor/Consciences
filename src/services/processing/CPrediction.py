@@ -37,9 +37,6 @@ from src.utils.Prints import pt
 from src.utils.PetitionObject import Petition
 from src.utils.Logger import Logger
 
-if not GS.GPU_TO_PREDICT:
-    os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
 LOGGER = GS.LOGGER if GS.LOGGER else Logger()
 
 

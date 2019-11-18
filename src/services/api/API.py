@@ -28,10 +28,11 @@ def __relative_imports(number_of_descent):
 
 __relative_imports(number_of_descent=4)
 
-import time, datetime,  argparse
-from timeit import default_timer as timer
-
 import src.config.GlobalSettings as GS
+if not GS.GPU_TO_PREDICT:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+GS.MINIMUM_IMPORTS = True
+
 from src.utils.AsynchronousThreading import object_to_json
 from src.utils.Folders import write_string_to_pathfile
 from src.utils.Datetimes import date_from_format
@@ -39,6 +40,16 @@ from src.utils.Prints import pt
 from utils.PetitionObject import Petition, JSON_PETITION_NAME
 from src.config.Configurator import Configurator
 from src.services.processing.CPrediction import CPrediction
+from src.config.Projects import Projects
+from timeit import default_timer as timer
+import time, datetime,  argparse
+
+# Load updated config
+CONFIG = Projects.get_problem_config()
+# Load updated settings
+SETTINGS = Projects.get_settings()
+
+MODEL_USED_FULLPATH = SETTINGS.model_path +  CONFIG.model_name_saved
 
 class AnswerConfiguration():
     json_petition_name = JSON_PETITION_NAME
@@ -54,6 +65,7 @@ class AnswerConfiguration():
         self.user_id = USER_ID
         self.user_id_path = USER_ID_PATH
         self.model_selected = MODEL_SELECTED
+        self.model_used_fullpath = MODEL_USED_FULLPATH
         prediction_results = self.__get_results(prediction_results)
         if prediction_results:
             if prediction_results.results:
@@ -81,23 +93,19 @@ def execute_clasification(PETITIONS):
 
     for petition_id in PETITIONS:
         GS.LOGGER.write_to_logger("Petition was found: " + petition_id)
-        try:
-            # Read petition json
-            # TODO (@gabvaztor) Create a different object class to manage paths logic
-            path_config = AnswerConfiguration(petition_id=petition_id)
-            petition = Petition(path=path_config.json_petition_src, petition_id=petition_id)
-            prediction_results = CPrediction(current_petition=petition)
-            new_answer_configuration = AnswerConfiguration(petition_id=petition_id,
-                                                           prediction_results=prediction_results)
-            json_answer_str = object_to_json(object=new_answer_configuration)
-            pt(json_answer_str)
-            write_string_to_pathfile(string=json_answer_str, filepath=new_answer_configuration.json_answer_src)
-            petitions_end_ok.append(petition_id)
-            GS.LOGGER.write_to_logger("Petition finished")
-        except Exception as error:
-            import traceback
-            traceback.print_exc()
-            GS.LOGGER.write_log_error(error)
+
+        # Read petition json
+        # TODO (@gabvaztor) Create a different object class to manage paths logic
+        path_config = AnswerConfiguration(petition_id=petition_id)
+        petition = Petition(path=path_config.json_petition_src, petition_id=petition_id)
+        prediction_results = CPrediction(current_petition=petition)
+        new_answer_configuration = AnswerConfiguration(petition_id=petition_id,
+                                                       prediction_results=prediction_results)
+        json_answer_str = object_to_json(object=new_answer_configuration)
+        pt(json_answer_str)
+        write_string_to_pathfile(string=json_answer_str, filepath=new_answer_configuration.json_answer_src)
+        petitions_end_ok.append(petition_id)
+        GS.LOGGER.write_to_logger("Petition finished")
 
     return petitions_end_ok
 
@@ -119,7 +127,8 @@ def __get_new_online_petitions():
             pt("Petitions:", PETITIONS, "|@@| Date:[" + str(date_from_format(date=datetime.datetime.now()) + "]"))
             pt("\n")
         elif sleeps_counts % 10 == 0:
-            pt("Total Counts: " + str(petitions_counts) + " ### Petitions:", PETITIONS, "|@@| Date:[" + str(date_from_format(date=datetime.datetime.now()) + "]"), same_line=True)
+            pt("Total Counts: " + str(petitions_counts) + " ### Petitions:", PETITIONS, "|@@| Date:[" +
+               str(date_from_format(date=datetime.datetime.now()) + "]"))
             #if sleeps_counts % 600: gc.collect()
         if PETITIONS:
             execute_clasification(PETITIONS)
@@ -157,7 +166,7 @@ def __get_new_folders(petitions):
 def run():
     __get_new_online_petitions()
 
-
+"""
 try:
     # Example:
     # python "../API.py"  -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
@@ -176,7 +185,7 @@ try:
 
     PETITIONS = []
     TRIES = 0
-    PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
+    PATH_ = r"Z:\Data_Science\Conciences\Framework\\Uploads"
     USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
     __get_new_online_petitions()
 
@@ -184,10 +193,11 @@ except Exception as e:
     USER_ID = ""  # To avoid warning
     GS.LOGGER.write_log_error(e)
     sys.exit()
+"""
 
 if __name__ == "__main__":
-
-    #__relative_imports_step_1()
+    USER_ID = None
+    MODEL_SELECTED = None
     try:
         # Example:
         # python "..\API.py" -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
@@ -201,18 +211,24 @@ if __name__ == "__main__":
         args = vars(ap.parse_args())
 
         GS.LOGGER.write_to_logger("API executed")
-        USER_ID = args["userID"] if "userID" in args else ""
-        MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else ""
+        USER_ID = args["userID"] if "userID" in args else None
+        MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else None
+
+        GS.PROBLEM_ID = MODEL_SELECTED
 
         PETITIONS = []
         TRIES = 0
         PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
         USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
-        __get_new_online_petitions()
+        run()
 
     except Exception as e:
-        USER_ID = ""  # To avoid warning
-        GS.LOGGER.write_log_error(e)
+        import traceback
+        traceback.print_exc()
+        USER_ID = ""  if not USER_ID else USER_ID # To avoid warning
+        MODEL_SELECTED = ""  if not MODEL_SELECTED else MODEL_SELECTED # To avoid warning
+        info = "USER_ID: " + USER_ID + " || MODEL_SELECTED: " + MODEL_SELECTED
+        GS.LOGGER.write_log_error(err=e, info=info)
         sys.exit()
 
 

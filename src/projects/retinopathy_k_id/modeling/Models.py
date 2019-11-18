@@ -49,7 +49,7 @@ def main(**kwargs):
     """
     from tensorflow.python.client import device_lib
     #m = device_lib.list_local_devices()
-    pt("CUDA status:", tf.test.is_built_with_cuda())
+    pt("CUDA status", tf.test.is_built_with_cuda())
     #tf.debugging.set_log_device_placement(True)
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
@@ -73,10 +73,14 @@ def execute_model(model: tf.keras.Sequential, **kwargs):
     # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
     # train set.
     # To restore model
-    if CMODEL.restore_model:
+
+    if CONFIG.restore_model_flag:
         #self.load_and_restore_model_v2()
         fullpath_save = CMODEL.settings_object.model_path + CONFIG.model_name_saved
+        pt("Trying to load model...")
         model = tf.keras.models.load_model(fullpath_save)
+        pt("Model Loaded successfully!")
+
     # Besides this, when test/validation set requires check its accuracy but its size is very long to save
     # in memory, it has to update all files during training to get the exact precision.
 
@@ -122,16 +126,18 @@ def network_structure_v1():
     #inputs = tf.keras.Input(shape=(_.height, _.width, _.dimensions))
     """ LAYERS """
     model = tf.keras.Sequential(name="Retinopathy")
+    #tf.keras.backend.set_floatx('float64')
     convolution_1 = layers.Conv2D(filters=_.neurons[0], kernel_size=_.kernel_size, activation="relu",
                                   input_shape=input_shape)
     pool_1 = layers.MaxPooling2D(pool_size=_.pool_size, strides=_.strides, padding="same")
     dropout_1 = layers.Dropout(rate=_.train_dropout)
-    convolution_2 = layers.Conv2D(filters=_.neurons[1], kernel_size=_.kernel_size, activation="relu")
+    convolution_2 = layers.Conv2D(filters=_.neurons[1], kernel_size=_.kernel_size)
     pool_2 = layers.MaxPooling2D(pool_size=_.pool_size, strides=_.strides, padding="same")
     convolution_3 = layers.Conv2D(filters=_.neurons[2], kernel_size=_.kernel_size, activation="relu")
     """ DENSE LAYER """
     flatten = layers.Flatten()
     #dense_1 = layers.Dense(units=_.neurons[3], activation='relu')
+    #normalization = layers.BatchNormalization()
     outputs = layers.Dense(units=_.number_of_classes, activation="softmax")
     #add_to_model = lambda x: model.add(x)
     layers_ = [
@@ -143,10 +149,13 @@ def network_structure_v1():
         #convolution_3,
         flatten,
         #dense_1,
-        outputs
-        ,
+        #normalization,
+        outputs,
     ]
     [model.add(layer) for layer in layers_]
-    model.compile(loss=tf.keras.losses.mean_squared_error,
-                  optimizer=tf.keras.optimizers.Adadelta())
+    loss = tf.keras.losses.categorical_crossentropy(from_logits=True)
+    model.compile(loss=loss,
+                  optimizer=tf.keras.optimizers.Adagrad(),
+                  #optimizer=tf.keras.optimizers.Adadelta(learning_rate=0.1),
+                  metrics=[tf.keras.metrics.CategoricalAccuracy()])
     return model

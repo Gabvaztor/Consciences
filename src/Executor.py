@@ -118,7 +118,6 @@ class Executor:
             _api_process(user_id=self.user_id, model_selected=self.model_selected,
                          petition_process_in_background=True)
         else:
-
             _core_process()
 
 def _api_process(user_id: str, model_selected: str, petition_process_in_background=True):
@@ -249,7 +248,7 @@ def _core_process():
                       input_labels=y_train, test_labels=y_test,
                       number_of_classes=number_of_classes, type=None,
                       validation=None, validation_labels=None,
-                      execute_background_process=True, predict_flag=GS.IS_PREDICTION)
+                      execute_background_process=False, predict_flag=GS.IS_PREDICTION)
     CMODEL.core(cmodels, CONFIG.call())
     """
     if __name__ == '__main__':

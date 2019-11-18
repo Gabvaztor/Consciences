@@ -9,9 +9,10 @@ API_PETITIONS = LOGGER_PATH + "api_petitions.log"
 class Logger:
     separator = "#################################"
     header = separator*2 + "\n" + separator + " START EVENTS " + separator + "\n" + separator*2 + "\n"
-    short_header = "EVENT " + "\n"
+    short_header = "----------EVENT---------- " + "\n"
+    short_header_error = "----------ERROR---------- " + "\n"
 
-    def write_log_error(self, err):
+    def write_log_error(self, err, info=None):
         exc_type, exc_obj, exc_tb = sys.exc_info()  # this is to get error line number and description.
         file_name = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]  # to get File Name.
         error_string = "ERROR : Error Msg:{},File Name : {}, Line no : {}\n".format(err, file_name,
@@ -19,7 +20,11 @@ class Logger:
         pt(error_string)
 
         file_log = open(ERROR_LOG , "a")
-        file_log.write(error_string + "\n\n" + str(err) + "\n\n")
+        file_log.write(self.short_header_error + str(datetime.datetime.now()) + "\n\n")
+        if info:
+            file_log.write(str(info) + "\n\n")
+        file_log.write(str(err) + "\n\n")
+
         file_log.close()
 
     def write_to_logger(self, to_write, starter=False):

@@ -2,13 +2,13 @@
 PROBLEM_ID = "retinopathy_k_id"
 
 # Set True if you are not training.
-IS_PREDICTION = True
+IS_PREDICTION = False
 
 # Set True if you want to execute the API mode
 API_MODE = False
 
 # Set True if you want to execute the UI
-IU_MODE = 0
+IU_MODE = 1
 
 # 0 = Production mode; 1 = Debug mode; 2 = Verbose mode
 DEBUG_MODE = 2
@@ -25,7 +25,7 @@ GPU_TO_PREDICT = False
 TIMED_FLAG_DECORATOR = False
 
 # Minimum imports. If True, it doesn't import unnecessaries libraries to execute whole project.
-MINIMUM_IMPORTS = True
+MINIMUM_IMPORTS = False
 
 # Root path directory
 import os

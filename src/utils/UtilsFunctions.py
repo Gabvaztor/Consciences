@@ -40,7 +40,7 @@ if not GS.MINIMUM_IMPORTS:
     """Collection"""
     import collections
     """ Shutil for copy and moves files"""
-    from shutil import *
+    import shutil
 """Json"""
 import json
 
@@ -240,8 +240,9 @@ def load_4_numpy_files(path_to_load, names_to_load_4):
 
 def save_and_restart(path_to_backup):
     """
-    Save and restart all progress. Create a "Zip" file from "Models" folder and, after that, remove it. 
-    :param path_to_backup: Path to do a backup and save it in a different folder
+    Save and restart all progress. Create a "Zip" file from "Models" folder and, after that, remove it.
+    Args:
+        path_to_backup:  Path to do a backup and save it in a different folder
     """
     actual_time = str(time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.gmtime(time.time())))
     to_copy = folders.get_directory_from_filepath(path_to_backup) + "\\"
@@ -249,11 +250,11 @@ def save_and_restart(path_to_backup):
         folders.get_directory_from_filepath(to_copy)) + "\\" + "Models_Backup(" + actual_time + ")"
     pt("Doing Models backup ...")
     # Do backup
-    make_archive(to_paste, 'zip', to_copy)
+    shutil.make_archive(to_paste, 'zip', to_copy)
     pt("Backup done successfully")
     # Do remove
     pt("Removing Models folder...")
-    rmtree(to_copy)
+    shutil.rmtree(to_copy)
     pt("Models removed successfully")
 
 

@@ -371,7 +371,7 @@ class ReaderFeatures():
 
 class Searcher(Reader):
 
-    def __init__(self, features, reader):
+    def __init__(self, features: ReaderFeatures, reader: Reader):
         super(Reader, self).__init__()
         self.path_to_read = features.set_data_files
         self.features = features

@@ -1,4 +1,3 @@
-
 def pt(title=None, text=None, same_line=False):
     """
     Use the print function to print a title and an object converted to string
@@ -15,6 +14,12 @@ def pt(title=None, text=None, same_line=False):
             else:
                 new_title += (str(element) + ", ")
         title = new_title
+
+    text_ = str(text)
+    title_ = str(title)
+
+    text = text_ if text_ != "None" else None
+    title = title_ if title_ != "None" else None
 
     if text is None:
         text = str(title)

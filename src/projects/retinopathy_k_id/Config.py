@@ -22,9 +22,12 @@ class Config():
     learning_rate = 1e-4
     number_of_classes = 5
     # Model
-    model_name_saved = "modelckpt_" + "my_model.h5"
+    model_version = "0.2"
+    model_name_saved = "modelckpt_" + "my_model_v" + model_version + ".h5"
+    restore_model_flag = False
     # Options
     options = [problem_id, 1, height, width]
+
 def _protected():
     pass
 

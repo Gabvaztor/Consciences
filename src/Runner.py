@@ -29,6 +29,10 @@ Notes:
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+from platform import python_version
+print("Python version:", python_version())
+
 def __get_root_project(number_of_descent):
     import sys, os
     sub_folders = "\\.."
@@ -60,7 +64,9 @@ def run():
         Executor().execute()
 
 if __name__ == "__main__":
-    print("Executed")
+    print("Runner Executed")
+    GS.API_MODE = False
+    GS.IS_PREDICTION = False
     try:
         Configurator().run_basics()
         GS.LOGGER.write_to_logger("Runner executed", starter=True)
@@ -95,7 +101,7 @@ if __name__ == "__main__":
                 run()
     except Exception as error:
         import traceback
-        traceback.print_stack()
+        traceback.print_exc()
         print("USER_ID", 2)
         print("MODEL_SELECTED", 3)
         GS.LOGGER.write_log_error(error)
