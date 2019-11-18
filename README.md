@@ -1,4 +1,4 @@
-# TensorFlow Boost
+# Consciences || TensorFlow Boost Framework
 
 This project is being moved to a new github repository. Also, the main project is being used in the url: 
 
