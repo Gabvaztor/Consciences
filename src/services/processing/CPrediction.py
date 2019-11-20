@@ -72,8 +72,8 @@ class CPrediction():
             # Predict image
             results = model.predict(x=to_be_predicted)
             return results.tolist()
-        except Exception as e:
-            return None
+        except Exception:
+            return "ERROR"
 
     def execute(self, input):
         # TODO (@gabvaztor) Finish
@@ -97,11 +97,11 @@ class CPrediction():
         Returns: type of retinopathy
         """
         jump_line = "\\r\\n"
-        if not self.results:
+        if self.results == "ERROR":
             to_show = "Sorry. It was an error during prediction. Try to upload the image with a different format." \
                       + jump_line + " '.png' is preferable with no transparency. Thanks for understanding."
             return to_show
-        else:
+        elif self.results:
             try:
                 results = str(self.results)
                 max_results = str(max(self.results[0]))
