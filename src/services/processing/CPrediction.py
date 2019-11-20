@@ -68,9 +68,12 @@ class CPrediction():
                                                                    options=self.config.options,
                                                                    to_predict=True)
         pt("to_be_predicted", to_be_predicted.shape)
-        # Predict image
-        results = model.predict(x=to_be_predicted)
-        return results.tolist()
+        try:
+            # Predict image
+            results = model.predict(x=to_be_predicted)
+            return results.tolist()
+        except Exception as e:
+            return None
 
     def execute(self, input):
         # TODO (@gabvaztor) Finish
@@ -93,26 +96,33 @@ class CPrediction():
         4 - Proliferative DR
         Returns: type of retinopathy
         """
-        try:
-            results = str(self.results)
-            max_results = str(max(self.results[0]))
-            id_ = self.petition_id
-            max_index = self.results[0].index(max(self.results[0]))
-            labels = ["No Retinopathy", "Mild Retinopathy", "Moderate Retinopathy", "Severe Retinopathy",
-                      "Proliferative Retinopathy"]
-
-            result_type = labels[max_index]
-            to_write = "RETINOPATHY" + "\nID: " + str(id_) + "\nresults: " + results + \
-                       "\nmax_results: " + max_results + "\nresult_type: " + result_type
-
-            to_show = "Most probably case: " + result_type + "<br>"
-            for index, result in enumerate(self.results[0]):
-                to_show += "Probability of '" + str(labels[index]) + "': " + "{0:.2f}".format(result*100) + "%<br>"
-            to_show = to_show.replace("<br>","\\r\\n")
-            LOGGER.write_to_logger(to_write + "\n\nTo show\n\n" + to_show)
+        jump_line = "\\r\\n"
+        if not self.results:
+            to_show = "Sorry. It was an error during prediction. Try to upload the image with a different format." \
+                      + jump_line + " '.png' is preferable with no transparency. Thanks for understanding."
             return to_show
-        except Exception as e:
-            LOGGER.write_log_error(e)
+        else:
+            try:
+                results = str(self.results)
+                max_results = str(max(self.results[0]))
+                id_ = self.petition_id
+                max_index = self.results[0].index(max(self.results[0]))
+                labels = ["No Retinopathy", "Mild Retinopathy", "Moderate Retinopathy", "Severe Retinopathy",
+                          "Proliferative Retinopathy"]
+
+                result_type = labels[max_index]
+                to_write = "RETINOPATHY" + "\nID: " + str(id_) + "\nresults: " + results + \
+                           "\nmax_results: " + max_results + "\nresult_type: " + result_type
+
+                to_show = "Most probably case: " + result_type + "<br>"
+                for index, result in enumerate(self.results[0]):
+                    to_show += "Probability of '" + str(labels[index]) + "': " + "{0:.2f}".format(result*100) + "%<br>"
+                to_show = to_show.replace("<br>","\\r\\n")
+                LOGGER.write_to_logger(to_write + "\n\nTo show\n\n" + to_show)
+                return to_show
+            except Exception as e:
+                LOGGER.write_log_error(e)
+
 
     def load_model(self, model_fullpath) -> tf.keras.Sequential:
         """
