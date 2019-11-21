@@ -99,7 +99,7 @@ class CPrediction():
         jump_line = "\\r\\n"
         if self.results == "ERROR":
             to_show = "Sorry. It was an error during prediction. Try to upload the image with a different format." \
-                      + jump_line + " '.png' is preferable with no transparency. " + jump_line + \
+                      + jump_line*2 + " '.png' is preferable with no transparency. " + jump_line*2 + \
                       " Thanks for understanding."
             return to_show
         elif self.results:
