@@ -1,6 +1,8 @@
 """
 python Z:\Data_Science\Projects\Consciences\src\examples\sockets\Client.py
 """
+from grpc._server import _send_message
+
 
 def __get_root_project(number_of_descent):
     import sys, os
@@ -39,17 +41,22 @@ class Client():
                     LOGGER.write_to_logger(msg.decode("utf-8"))
                     print(msg.decode("utf-8"))
                     answered = True
-                    self.tcp_socket.close()
+                    option_selected = str(input("Select an option to send to server:\n"))
+                    self.send_message_to_server(message=option_selected)
+                    #self.tcp_socket.close()
                 else:
+                    print("No message found")
                     LOGGER.write_to_logger("No message found")
                 time.sleep(1)  # One second per attemp
                 attemps += 1
                 LOGGER.write_to_logger("Attemp number: " + str(attemps))
-                if answered:
-                    break
+
             except Exception as error:
                 LOGGER.write_log_error(error, str(error))
                 break
+
+    def send_message_to_server(self, message):
+        self.tcp_socket.send(bytes(message,"utf-8"))
 
 if __name__ == "__main__":
     __get_root_project(number_of_descent=4)
