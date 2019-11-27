@@ -16,12 +16,13 @@ class Server():
 
     def __init__(self, port=None, host=None):
         if not port or not host:
+            self.host = socket.gethostname()
             self.host = HOST_SERVER
             self.port = SERVER_PORT
         self.counts_petitions = 0
         self.sockets_list = []
-        self.tcp_socket = self.connect()
-        self.handle_requests_v2()
+        self.connect()
+        self.handle_requests()
 
 
     def connect(self):
@@ -33,9 +34,8 @@ class Server():
             self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # socket options
             self.tcp_socket.bind((self.host, self.port))  # Create the bind
             self.tcp_socket.listen()  # Make it a constant listener for X clients (as queue)
-            print("Server created and listening")
+            print("Server created and listening at address: " + str(self.host) + ":" + str(self.port))
             self.sockets_list.append(self.tcp_socket)
-            return self.tcp_socket
         except Exception as error:
             print(str(error))
             LOGGER.write_log_error(error, str(error))
@@ -57,6 +57,8 @@ class Server():
                 if client_socket and cliend_address:
                     self.client_sockets_queue.update({client_socket : cliend_address})
                     LOGGER.write_to_logger("A connection has been detected from dir: " + str(cliend_address))
+                    print("---------------------------------------------\n"
+                          "A connection has been detected from dir: " + str(cliend_address))
                     msg_ = "[SERVER] I am here!" + "\n"
                     self.send_message_to_client(client_socket=client_socket, message=msg_)
                     self.counts_petitions += 1
@@ -109,12 +111,20 @@ class Server():
                         else:
                             user = self.client_sockets_queue[n_socket]
                             print(f"Received message from {user['data']}: {message['data']}")
-                        """
-                        if self.receive_message(client_socket=client_socket):
-                            #option_selected = str(input("Select an option to send to server"))
-                            self.send_message_to_client(client_socket=client_socket, message="second message")
-                            #self.tcp_socket.close()
-                        """
+
+                        for client_socket in self.sockets_list:
+                            if client_socket != n_socket:
+                                client_socket.send(user["header"] + user["data"] + message["header"] + message["data"])
+                for n_socket in exception_sockets:
+                    self.sockets_list.remove(n_socket)
+                    del self.client_sockets_queue[n_socket]
+
+                """
+                if self.receive_message(client_socket=client_socket):
+                    #option_selected = str(input("Select an option to send to server"))
+                    self.send_message_to_client(client_socket=client_socket, message="second message")
+                    #self.tcp_socket.close()
+                """
 
 
         else:

@@ -1,7 +1,7 @@
 """
 python Z:\Data_Science\Projects\Consciences\src\examples\sockets\Client.py
 """
-from grpc._server import _send_message
+#from grpc._server import _send_message
 
 
 def __get_root_project(number_of_descent):
