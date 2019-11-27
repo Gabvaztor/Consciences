@@ -1,9 +1,3 @@
-"""
-python Z:\Data_Science\Projects\Consciences\src\examples\sockets\Client.py
-"""
-#from grpc._server import _send_message
-
-
 def __get_root_project(number_of_descent):
     import sys, os
     file = __file__
@@ -22,7 +16,7 @@ class Client():
     def connect(self):
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_socket.connect((HOST_SERVER, SERVER_PORT))
-        print("Connected to host: " + str(self.host))
+        print("Connected to host: " + str(self.host) + ":" + str(self.port))
         attemps = 0
         answered = False
         while True:
@@ -42,7 +36,7 @@ class Client():
                     print(msg.decode("utf-8"))
                     answered = True
                     option_selected = str(input("Select an option to send to server:\n"))
-                    self.send_message_to_server(message=option_selected)
+                    self.send_message_to_server(message="Client message: " + option_selected)
                     #self.tcp_socket.close()
                 else:
                     print("No message found")

@@ -1,7 +1,3 @@
-"""
-python Z:\Data_Science\Projects\Framework_API_Consciences\src\sockets\Server.py
-"""
-
 def __get_root_project(number_of_descent):
     import sys, os
     file = __file__
