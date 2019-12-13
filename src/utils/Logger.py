@@ -32,8 +32,12 @@ class Logger:
         if info:
             file_log.write(str(info) + "\n\n")
         file_log.write(str(err) + "\n\n")
-
-        file_log.close()
+        if type(err) != type(""):
+            ex_traceback = err.__traceback__
+            tb_lines = [ line.rstrip('\n') for line in
+                         traceback.format_exception(err.__class__, err, ex_traceback)]
+            [file_log.write(str(line)) for line in tb_lines]
+            file_log.write("\n\n")
 
     def write_to_logger(self, to_write, starter=False, force_path=None):
         if force_path:

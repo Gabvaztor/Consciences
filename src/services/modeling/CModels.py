@@ -38,6 +38,9 @@ import src.utils.Prints as prints
 from src.config.Projects import Projects
 from src.config.GlobalDecorators import DecoratorClass
 from src.utils.AsynchronousThreading import execute_asynchronous_thread
+from src.utils.Logger import Logger
+
+LOGGER = GS.LOGGER if GS.LOGGER else Logger()
 
 # noinspection PyUnresolvedReferences
 print("CModel Executed")
@@ -1590,13 +1593,25 @@ def image_process_retinopathy(image, image_type, height, width, is_test=False, c
         if to_save or to_predict:
             #  TODO(@gabvaztor) Delete width black pixels, resize and save to x,y resolution
             # Resize image and modify
-            image_array = np.array(image)[:, 140:-127, :]
+            #image_array = np.array(image)[:, 140:-127, :]
+            image_array = np.array(image)
             image = PIL.Image.fromarray(image_array)
             width2, height2 = image.size
+            to_write = "BEFORE RESIZE:\nwidth: " + str(width2) + " || height: " + str(height2)
+            LOGGER.write_to_logger(to_write)
             pt("width2", width2)
             pt("height2", height2)
             image = np.array(image.resize((width, height)))
+            to_write = "AFTER RESIZE:\nwidth: " + str(width) + " || height: " + str(height) + " || " + \
+                       "image.shape: " + str(image.shape)
+            LOGGER.write_to_logger(to_write)
             pt("image", image.shape)
+            # We delete the last dimension if there is 4 instead 3. (transparency)
+            if image.shape[2] == 4:
+                image = image[:,:,:3]
+                to_write = "AFTER REMOVE ALPHA:\nwidth: " + str(width) + " || height: " + str(height) + " || " + \
+                           "image.shape: " + str(image.shape)
+                LOGGER.write_to_logger(to_write)
             if to_save:
                 # TODO (@gabvaztor) Create new place in SETTINGS to save new datasets
                 # Image path

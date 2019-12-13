@@ -71,9 +71,9 @@ class AnswerConfiguration():
             if prediction_results.results:
                 self.answer = prediction_results.readable_results
             else:
-                self.answer = "NOK"
+                self.answer = "NOK1"
         else:
-            self.answer = "NOK"
+            self.answer = "NOK2"
 
     def __get_results(self, prediction_results: CPrediction):
         return prediction_results

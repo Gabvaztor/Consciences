@@ -59,21 +59,22 @@ class CPrediction():
         self.readable_results = self.make_readable_results(config=self.config)
 
     def execute_petition_prediction(self, input_path):
-        # Load model
-        model = self.load_model(model_fullpath=self.settings.model_path + self.config.model_name_saved)
-
-        # Transform current image_path to an image to be predicted
-        to_be_predicted, _ = models.data_treatment_generic_problem(input=input_path,
-                                                                   inputs_labels=None,
-                                                                   options=self.config.options,
-                                                                   to_predict=True)
-        pt("to_be_predicted", to_be_predicted.shape)
         try:
+            # Load model
+            model = self.load_model(model_fullpath=self.settings.model_path + self.config.model_name_saved)
+
+            # Transform current image_path to an image to be predicted
+            to_be_predicted, _ = models.data_treatment_generic_problem(input=input_path,
+                                                                       inputs_labels=None,
+                                                                       options=self.config.options,
+                                                                       to_predict=True)
+            pt("to_be_predicted", to_be_predicted.shape)
+
             # Predict image
             results = model.predict(x=to_be_predicted)
             return results.tolist()
-        except Exception:
-            return "ERROR"
+        except Exception as e:
+            LOGGER.write_log_error(e)
 
     def execute(self, input):
         # TODO (@gabvaztor) Finish

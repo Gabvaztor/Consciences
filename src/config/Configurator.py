@@ -80,7 +80,9 @@ class Configurator:
     def activate_logger(self):
         if not self.__check_logger_status():
             GS.LOGGER = Logger()
-            GS.LOGGER.write_to_logger("Logger activated")
+            GS.LOGGER.write_to_logger("########################################################################\n"
+                                      "########################### LOGGER ACTIVATED ###########################\n"
+                                      "########################################################################")
         return GS.LOGGER
 
     def __check_logger_status(self):
