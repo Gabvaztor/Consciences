@@ -4,9 +4,14 @@ This class is used in kaggle competitions
 
 import json, os
 import src.utils.Folders as folders
+import src.config.GlobalSettings as GS
+
 
 JSON_PETITION_NAME = "jsonPetition.json"
+JSON_PETITION_NAME = GS.GLOBAL_CONFIG_JSON["json_petition_name"]
 PETITION_FOLDER = "Z:\\Data_Science\\Conciences\\"
+PETITION_FOLDER = GS.GLOBAL_CONFIG_JSON["root_consciences_global_project_path"]
+
 class Petition():
 
     string_folder_path = "folder"

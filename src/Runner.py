@@ -35,21 +35,10 @@ print("Python version:", python_version())
 
 def __get_root_project(number_of_descent):
     import sys, os
-    sub_folders = "\\.."
     file = __file__
-    #print("original file: " + file)
     for _ in range(number_of_descent):
         file = os.path.dirname(file)
         sys.path.append(file)
-        #print("file: ", file + sub_folders)
-        #sys.path.append(file + sub_folders)
-        #sys.path.append(file + sub_folders + "\\")
-    root_folder = str(file + "\\")
-    root_folder_children = str(file + "..")
-    #print("root_folder:", root_folder)
-    #print("root_folder_children:", root_folder_children)
-    #sys.path.append("..")
-    #print(sys.path)
     sys.path = list(set(sys.path))
 
 if __name__ == "__main__":
@@ -71,7 +60,6 @@ if __name__ == "__main__":
         Configurator().run_basics()
         GS.LOGGER.write_to_logger("Runner executed", starter=True)
         # Updating API Mode
-
         import argparse
         ap = argparse.ArgumentParser()
         ap.add_argument("-i", "--userID", required=False,
@@ -86,7 +74,6 @@ if __name__ == "__main__":
             print("USER_ID", USER_ID)
             print("MODEL_SELECTED", MODEL_SELECTED)
             try:
-                print(23123123123)
                 Executor(user_id=USER_ID, model_selected=MODEL_SELECTED).execute()
                   # This means it is a new client petition from PHP.
             except Exception as e:

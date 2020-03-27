@@ -1,5 +1,4 @@
 """
-
 """
 
 from __future__ import absolute_import
@@ -8,21 +7,11 @@ from __future__ import print_function
 import os, sys
 
 def __relative_imports(number_of_descent):
-    sub_folders = "\\.."
     file = __file__
-    #print("original file: " + file)
     for _ in range(number_of_descent):
         file = os.path.dirname(file)
         sys.path.append(file)
-        #print("file: ", file + sub_folders)
-        #sys.path.append(file + sub_folders)
-        #sys.path.append(file + sub_folders + "\\")
-    root_folder = str(file + "\\")
-    root_folder_children = str(file + "..")
-    #print("root_folder:", root_folder)
-    #print("root_folder_children:", root_folder_children)
     sys.path.append("..")
-    #print(sys.path)
     sys.path = list(set(sys.path))
     [print(x) for x in sys.path]
 
@@ -37,7 +26,7 @@ from src.utils.AsynchronousThreading import object_to_json
 from src.utils.Folders import write_string_to_pathfile
 from src.utils.Datetimes import date_from_format
 from src.utils.Prints import pt
-from utils.PetitionObject import Petition, JSON_PETITION_NAME
+from src.utils.PetitionObject import Petition, JSON_PETITION_NAME
 from src.config.Configurator import Configurator
 from src.services.processing.CPrediction import CPrediction
 from src.config.Projects import Projects
@@ -50,13 +39,15 @@ CONFIG = Projects.get_problem_config()
 SETTINGS = Projects.get_settings()
 
 MODEL_USED_FULLPATH = SETTINGS.model_path +  CONFIG.model_name_saved
+UPLOADS_PATH = GS.GLOBAL_CONFIG_JSON["upload_aimodel_python_path"]
+
 
 class AnswerConfiguration():
     json_petition_name = JSON_PETITION_NAME
-    json_answer_name = "jsonAnswer.json"
+    json_answer_name = GS.GLOBAL_CONFIG_JSON["json_answer_name"]
 
     def __init__(self, petition_id, prediction_results=None):
-        self.petition_src = PATH_ + "\\" + petition_id + "\\"
+        self.petition_src = UPLOADS_PATH + "\\" + petition_id + "\\"
         self.model_folder = os.listdir(self.petition_src)[0]
         self.final_petition_dir = self.petition_src + self.model_folder + "\\"
         self.json_petition_src = self.final_petition_dir + self.json_petition_name
@@ -156,7 +147,7 @@ def __get_new_folders(petitions):
     Returns:
 
     """
-    users_ids = os.listdir(PATH_)
+    users_ids = os.listdir(UPLOADS_PATH)
     if USER_ID in users_ids:
         users_ids = [USER_ID]
     else:
@@ -165,35 +156,6 @@ def __get_new_folders(petitions):
 
 def run():
     __get_new_online_petitions()
-
-"""
-try:
-    # Example:
-    # python "../API.py"  -i 79.153.245.232_[29-10-2019_14.34.19] -m retinopathy_k_id
-    Configurator().run_basics()
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--userID", required=False,
-                    help="userID")
-    ap.add_argument("-m", "--userModelSelection", required=False,
-                    help="userModelSelection")
-
-    args = vars(ap.parse_args())
-
-    GS.LOGGER.write_to_logger("API executed")
-    USER_ID = args["userID"] if "userID" in args else ""
-    MODEL_SELECTED = args["userModelSelection"] if "userModelSelection" in args else ""
-
-    PETITIONS = []
-    TRIES = 0
-    PATH_ = r"Z:\Data_Science\Conciences\Framework\\Uploads"
-    USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
-    __get_new_online_petitions()
-
-except Exception as e:
-    USER_ID = ""  # To avoid warning
-    GS.LOGGER.write_log_error(e)
-    sys.exit()
-"""
 
 if __name__ == "__main__":
     USER_ID = None
@@ -218,8 +180,8 @@ if __name__ == "__main__":
 
         PETITIONS = []
         TRIES = 0
-        PATH_ = r"Z:\Data_Science\Conciences\Framework\Uploads"
-        USER_ID_PATH = PATH_ + "\\" + USER_ID if USER_ID else PATH_ + "\\"
+
+        USER_ID_PATH = UPLOADS_PATH + "\\" + USER_ID if USER_ID else UPLOADS_PATH + "\\"
         run()
 
     except Exception as e:

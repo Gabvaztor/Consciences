@@ -1,3 +1,31 @@
+"""
+Global Settings
+"""
+import os, json
+
+# SRC Root path directory
+PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # src
+
+# Completed root path
+ROOT_PATH = os.path.dirname(PROJECT_ROOT_PATH)  # ConsciencesAI project code (with data, documentation, src, ...)
+
+# Completed global project path
+GLOBAL_PROJECT_PATH = os.path.dirname(ROOT_PATH)  # Consciences_Global_Project/
+
+FRAMEWORK_PATH = GLOBAL_PROJECT_PATH + "\\Framework\\"
+MODELS_PATH = FRAMEWORK_PATH + "Models\\"
+MODELS_PATH = "Z:\\Data_Science\\Conciences\\Framework\\Models\\"
+
+CONFIG_JSON_FULLPATH = FRAMEWORK_PATH + "config.json"
+CONFIG_JSON_FULLPATH = "Z:\Data_Science\Conciences\Framework\config.json"
+
+# Logger: Logger is activated by Configurator if None
+LOGGER = None
+
+LOGGER_PATH = PROJECT_ROOT_PATH + "\\logs\\"  # ...\ProjectName\src\logs\
+
+global GLOBAL_CONFIG_JSON
+
 # Current problem id
 PROBLEM_ID = "retinopathy_k_id"
 
@@ -27,18 +55,6 @@ TIMED_FLAG_DECORATOR = False
 # Minimum imports. If True, it doesn't import unnecessaries libraries to execute whole project.
 MINIMUM_IMPORTS = False
 
-# SRC Root path directory
-import os
-PROJECT_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Completed root path
-ROOT_PATH = os.path.dirname(PROJECT_ROOT_PATH)
-
-# Logger: Logger is activated by Configurator if None
-LOGGER = None
-
-LOGGER_PATH = PROJECT_ROOT_PATH + "\\logs\\"  # ...\ProjectName\src\logs\
-
 def __modules_no_decorables():
     """
     Returns: list of all local variables that mean: paths, folders or filenames of python modules.
@@ -59,6 +75,11 @@ def __functions_no_decorables():
     pt = "pt"
     return list(locals().copy().values())
 
-MODULES_NO_DECORABLES = __modules_no_decorables()
+def __declare_global_config_json():
+    global GLOBAL_CONFIG_JSON
+    with open(CONFIG_JSON_FULLPATH, 'r+') as outfile:
+        GLOBAL_CONFIG_JSON = json.load(outfile)
 
+MODULES_NO_DECORABLES = __modules_no_decorables()
 FUNCTIONS_NO_DECORABLES = __functions_no_decorables()
+__declare_global_config_json()

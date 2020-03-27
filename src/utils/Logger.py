@@ -2,7 +2,6 @@ import sys, os, datetime, traceback
 from src.utils.Prints import pt
 from src.config.GlobalSettings import LOGGER_PATH
 
-
 ERROR_LOG = LOGGER_PATH + "errors.log"
 API_PETITIONS = LOGGER_PATH + "api_petitions.log"
 

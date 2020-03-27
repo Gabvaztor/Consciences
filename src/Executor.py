@@ -137,8 +137,6 @@ def _api_process(user_id: str, model_selected: str, petition_process_in_backgrou
         try:  # Getting fullpath from api module
             filepath = str(api.__file__)
             pt("filepath", filepath)
-            bat_path = "Z:\\Data_Science\\Projects\\Framework_API_Consciences\\src\\AIModels_FW_main.bat"
-            python_path = 'python "Z:\Data_Science\Projects\Framework_API_Consciences\src\MainLoop.py"' + " -i " + user_id
             python_path2 = 'python "' + filepath + '" -i ' + user_id + ' -m ' + model_selected
             if "\\..\\src" in python_path2:
                 python_path2 = python_path2.replace("\\..\\src", "")
@@ -194,7 +192,7 @@ def _core_process():
     known_data_type = ''  # Contains the type of data if the data file contains an unique type of data. Examples: # Number
     # or Chars.
 
-    # TODO (@gabvaztor) Check if file exist autom<atically
+    # TODO (@gabvaztor) Check if file exist automatically
     load_dataset = True
     if load_dataset:
         path_to_load = SETTING_OBJECT.saved_dataset_path

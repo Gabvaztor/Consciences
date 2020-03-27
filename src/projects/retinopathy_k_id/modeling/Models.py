@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras.layers as layers
+import src.config.GlobalSettings as GS
 
 from src.services.modeling.CModels import CModels
 from ..Config import Config
@@ -71,12 +72,15 @@ def execute_model(model: tf.keras.Sequential, **kwargs):
     # Batching values and labels from input and labels (with batch size)
 
     # TODO (@gabvaztor) When restore model and don't change train size, it must to keep the same order of
-    # train set.
+    #  train set.
     # To restore model
 
     if CONFIG.restore_model_flag:
         #self.load_and_restore_model_v2()
-        fullpath_save = CMODEL.settings_object.model_path + CONFIG.model_name_saved
+        # TODO (@gabvaztor) model path must satisfied path logic (/framework/Models/...). Not use SETTINGS for
+        #  models paths
+        #fullpath_save = CMODEL.settings_object.model_path + CONFIG.model_name_saved
+        fullpath_save = GS.MODELS_PATH + "Retinopathy.1\\models\\" + CONFIG.model_name_saved
         pt("Trying to load model...")
         model = tf.keras.models.load_model(fullpath_save)
         pt("Model Loaded successfully!")

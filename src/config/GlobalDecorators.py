@@ -66,6 +66,15 @@ class DecoratorClass(object):
         def msg_decorator(function):
             @functools.wraps(function)
             def inner_dec(*args, **kwargs):
+                """
+                This function ...
+                Args:
+                    *args:
+                    **kwargs:
+
+                Returns:
+
+                """
                 exception_function_flag = False
                 method_str = str(function)[10:-23] if function else ""
 

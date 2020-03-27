@@ -26,7 +26,7 @@ https://google.github.io/styleguide/pyguide.html
 Notes:
     * This file use TensorFlow version >1.0.
 """
-import os, datetime, sys
+import datetime
 #sys.path.append(__file__)
 
 import src.services.modeling.CModels as models
@@ -38,7 +38,6 @@ from src.utils.PetitionObject import Petition
 from src.utils.Logger import Logger
 
 LOGGER = GS.LOGGER if GS.LOGGER else Logger()
-
 
 class CPrediction():
 
@@ -61,8 +60,10 @@ class CPrediction():
     def execute_petition_prediction(self, input_path):
         try:
             # Load model
-            model = self.load_model(model_fullpath=self.settings.model_path + self.config.model_name_saved)
+            #model = self.load_model(model_fullpath=self.settings.model_path + self.config.model_name_saved)
 
+            model = self.load_model(model_fullpath=GS.MODELS_PATH + "Retinopathy.1\\models\\" +
+                                                   self.config.model_name_saved)
             # Transform current image_path to an image to be predicted
             to_be_predicted, _ = models.data_treatment_generic_problem(input=input_path,
                                                                        inputs_labels=None,
@@ -124,7 +125,6 @@ class CPrediction():
                 return to_show
             except Exception as e:
                 LOGGER.write_log_error(e)
-
 
     def load_model(self, model_fullpath) -> tf.keras.Sequential:
         """

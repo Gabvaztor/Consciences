@@ -216,6 +216,8 @@ class CModels():
         self._save_and_restart = False  # All history and metadata will be saved in a different folder and the execution
         # will be restarted
         if self.save_and_restart and not self.restore_to_predict:
+            # TODO (@gabvaztor) Get path from project path logic
+            #utils.save_and_restart(GS.MODELS_PATH + GS.PROBLEM_ID + "Models")
             utils.save_and_restart(self.settings_object.model_path)
         # SAVE AND LOAD MODEL
         # If load_model_configuration is True, then it will load a configuration from settings_object method
@@ -1316,10 +1318,14 @@ class CModels():
         Restore a tensorflow model from a model_path checking if model_path exists and create if not.
         :param session: Tensorflow session
         """
+        # TODO (@gabvaztor) Get path from project path logic
+        # utils.save_and_restart(GS.MODELS_PATH + GS.PROBLEM_ID + "Models")
         if self.settings_object.model_path:
             pt("Restoring model...", self.settings_object.model_path)
             try:
                 # TODO (@gabvaztor) Do Generic possibles models
+                # TODO (@gabvaztor) Get path from project path logic
+                # utils.save_and_restart(GS.MODELS_PATH + GS.PROBLEM_ID + "Models")
                 model_possible_1 = self.settings_object.model_path + "model" + Dictionary.string_ckpt_extension
                 model_possible_2 = model_possible_1 + Dictionary.string_meta_extension
                 model_possible_3 = model_possible_1 + Dictionary.string_ckpt_extension
@@ -1362,8 +1368,12 @@ class CModels():
 
     def save_actual_model(self, model: tf.keras.Sequential, save_type, config):
         # Save variables to disk.
+        # TODO (@gabvaztor) Get path from project path logic
+        # utils.save_and_restart(GS.MODELS_PATH + GS.PROBLEM_ID + "Models")
         if self.settings_object.model_path:
             try:
+                # TODO (@gabvaztor) Get path from project path logic
+                # utils.save_and_restart(GS.MODELS_PATH + GS.PROBLEM_ID + "Models")
                 fullpath_save = self.settings_object.model_path + config.model_name_saved
                 pt("fullpath_save", fullpath_save)
                 if save_type == 2:  # Force save, temp save

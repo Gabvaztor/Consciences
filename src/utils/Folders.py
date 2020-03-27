@@ -36,7 +36,6 @@ def create_file_from_fullpath(fullpath):
         file = open(fullpath, 'w+')
         file.close()
 
-
 def file_exists_in_path_or_create_path(filepath):
     """
     Check if filepath exists and, if not, it creates the dir
