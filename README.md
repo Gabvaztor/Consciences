@@ -2,7 +2,7 @@
 
 This project is being moved to a new github repository. Also, the main project is being used in the url: 
 
-[http://aiconscience.ddns.net/ai-models/](http://aiconscience.ddns.net/ai-models/)
+[https://consciencesai.com/ai-models/](https://consciencesai.com/ai-models/)
 
 **TensorFlow Boost's Repository**
 
@@ -48,7 +48,7 @@ https://google.github.io/styleguide/pyguide.html
 
 **TensorFlow Boost Web example (NEW):**
 
-[http://aiconscience.ddns.net/ai-models/](http://aiconscience.ddns.net/ai-models/)
+[https://consciencesai.com/ai-models/](https://consciencesai.com/ai-models/)
 
 <div align="center">
 <img src="https://github.com/Gabvaztor/Consciences/blob/master/documentation/images/tfboost-framework-web-example.png"><br>
